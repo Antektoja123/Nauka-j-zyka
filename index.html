@@ -3,65 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Learner Mobile</title>
+    <title>Super Learner Pro</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        button { background: #007bff; color: white; border: none; padding: 15px 25px; border-radius: 10px; margin: 10px 5px; cursor: pointer; font-size: 16px; width: 100%; }
-        input { padding: 15px; width: calc(100% - 30px); margin-bottom: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        input:focus { border-color: #007bff; }
-        #stats { font-weight: bold; color: #555; margin-bottom: 20px; font-size: 18px; }
-        #word-display { font-size: 22px; font-weight: bold; margin-bottom: 20px; color: #333; }
+        :root { --primary: #007bff; --secondary: #28a745; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .app-container { background: white; width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; min-height: 95vh; display: flex; flex-direction: column; }
+        .header { background: var(--primary); color: white; padding: 15px; text-align: center; }
+        .xp-bar-container { background: #e9ecef; height: 12px; width: 100%; }
+        #xp-progress { background: #ffc107; height: 100%; width: 0%; transition: width 0.5s; }
+        .content { padding: 20px; flex-grow: 1; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 15px 10px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+        .btn-blue { background: var(--primary); color: white; width: 100%; }
+        .btn-green { background: var(--secondary); color: white; width: 100%; }
+        .btn-orange { background: #fd7e14; color: white; width: 100%; }
+        input { width: 100%; padding: 15px; box-sizing: border-box; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; margin: 20px 0; outline: none; }
+        .hidden { display: none; }
+        .stats-row { display: flex; justify-content: space-around; background: #f8f9fa; padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; }
+        .grammar-note { background: #fff3cd; border-left: 5px solid #ffc107; padding: 12px; margin-bottom: 15px; font-size: 14px; text-align: left; border-radius: 0 10px 10px 0; }
+        .result-item { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+        .error { color: #dc3545; font-weight: bold; } 
+        .correct { color: #28a745; font-weight: bold; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h2>🚀 Super Learner</h2>
-    <div id="stats">Punkty: 0 | Bonus: x1</div>
-    <div id="game-area">
-        <p id="word-display">Ładowanie...</p>
-        <input type="text" id="answer-input" placeholder="Twoja odpowiedź..." autofocus>
-        <button onclick="checkAnswer()">Sprawdź</button>
-        <button onclick="buyUpgrade()" style="background: #28a745;">Sklep (Ulepszenie: 50 pkt)</button>
+
+<div class="app-container">
+    <div class="header">
+        <h2 style="margin:0">🚀 Super Learner Pro</h2>
+        <div id="level-display">Poziom 1 (0/100 XP)</div>
+    </div>
+    <div class="xp-bar-container"><div id="xp-progress"></div></div>
+
+    <div class="stats-row">
+        <span id="stat-lang">Język: -</span>
+        <span id="stat-points">Punkty: 0</span>
+        <span id="stat-bonus">Bonus: x1</span>
+    </div>
+
+    <div class="content">
+        <div id="view-main">
+            <h3>Wybierz Język Nauki:</h3>
+            <div class="menu-grid">
+                <button class="btn-blue" onclick="selectLang('angielski')">🇬🇧 Angielski</button>
+                <button class="btn-orange" onclick="selectLang('hiszpański')">🇪🇸 Hiszpański</button>
+            </div>
+            <button onclick="resetGame()" style="margin-top:20px; background:#eee; color:#666; font-size:10px;">ZRESETUJ WSZYSTKO</button>
+        </div>
+
+        <div id="view-topics" class="hidden">
+            <button onclick="showView('view-main')" style="background:none; color:var(--primary); font-size: 16px;">⬅ Zmień język</button>
+            <h3 id="topic-title">Wybierz temat:</h3>
+            <div id="grammar-info" class="grammar-note hidden"></div>
+            <div class="menu-grid" id="topics-buttons"></div>
+            <hr>
+            <h4>Sklep</h4>
+            <button class="btn-green" id="btn-upgrade" onclick="buyUpgrade()">Kup Bonus</button>
+        </div>
+
+        <div id="view-game" class="hidden">
+            <p id="word-display" style="font-size:32px; font-weight:bold; color: #333; margin-top: 0;"></p>
+            <input type="text" id="answer-input" placeholder="Wpisz po polsku..." autocomplete="off">
+            <button class="btn-blue" onclick="checkAnswer()" style="font-size: 18px; padding: 18px;">SPRAWDŹ</button>
+        </div>
+
+        <div id="view-results" class="hidden">
+            <h2 id="congrats-msg">Świetnie!</h2>
+            <div id="error-list"></div>
+            <br>
+            <button class="btn-blue" onclick="showView('view-topics')">Wróć do tematów</button>
+        </div>
     </div>
 </div>
+
 <script>
-const slownik = {"apple (apl)": "jabłko", "banana (banena)": "banan", "pear (per)": "gruszka", "day (dej)": "dzień", "night (najt)": "noc", "week (łik)": "tydzień"};
-let punkty = 0, mnoznik = 1, currentWord = "", currentTranslation = "";
-function nextWord() {
-    const keys = Object.keys(slownik);
-    currentWord = keys[Math.floor(Math.random() * keys.length)];
-    currentTranslation = slownik[currentWord];
-    document.getElementById("word-display").innerText = `Jak jest po polsku: ${currentWord}?`;
-    document.getElementById("answer-input").value = "";
+const baza = {
+    "angielski": {
+        "grammar": "<b>Wskazówka:</b> W angielskim używamy <i>a/an</i> przed rzeczownikami. <i>The</i> używamy dla konkretów.",
+        "tematy": {
+            "Owoce": {"apple": "jabłko", "banana": "banan", "pear": "gruszka", "strawberry": "truskawka", "raspberry": "malina"},
+            "Zwierzęta": {"dog": "pies", "cat": "kot", "lion": "lew", "elephant": "słoń", "mouse": "mysz"},
+            "Dom": {"window": "okno", "door": "drzwi", "bed": "łóżko", "kitchen": "kuchnia", "table": "stół"}
+        }
+    },
+    "hiszpański": {
+        "grammar": "<b>Wskazówka:</b> Rodzajniki: <i>el</i> (męski), <i>la</i> (żeński). Liczba mnoga: <i>los</i> i <i>las</i>.",
+        "tematy": {
+            "Owoce": {"manzana": "jabłko", "uva": "winogrono", "platano": "banan", "cereza": "wiśnia", "limon": "cytryna"},
+            "Rodzina": {"padre": "ojciec", "madre": "matka", "hermano": "brat", "abuela": "babcia", "hijo": "syn"},
+            "Kolory": {"rojo": "czerwony", "azul": "niebieski", "verde": "zielony", "negro": "czarny", "blanco": "biały"}
+        }
+    }
+};
+
+// --- LOGIKA ZAPISU ---
+let defaultState = {
+    points: { "angielski": 0, "hiszpański": 0 },
+    bonus: { "angielski": 1, "hiszpański": 1 },
+    xp: 0, level: 1
+};
+
+// Ładowanie z pamięci telefonu
+let saved = localStorage.getItem('superLearnerSave');
+let state = saved ? JSON.parse(saved) : defaultState;
+
+// Dodatkowe zmienne sesji (niezapisywane)
+let currentSession = { lang: "", topic: "", words: [], index: 0, errors: [] };
+
+function saveGame() {
+    localStorage.setItem('superLearnerSave', JSON.stringify(state));
 }
+
+function resetGame() {
+    if(confirm("Czy na pewno chcesz usunąć wszystkie punkty i poziomy?")) {
+        localStorage.removeItem('superLearnerSave');
+        location.reload();
+    }
+}
+// ----------------------
+
+function showView(viewId) {
+    ["view-main", "view-topics", "view-game", "view-results"].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(viewId).classList.remove('hidden');
+    updateUI();
+}
+
+function selectLang(l) {
+    currentSession.lang = l;
+    document.getElementById("stat-lang").innerText = `Język: ${l.toUpperCase()}`;
+    const gInfo = document.getElementById("grammar-info");
+    gInfo.innerHTML = baza[l].grammar;
+    gInfo.classList.remove("hidden");
+
+    const container = document.getElementById("topics-buttons");
+    container.innerHTML = "";
+    Object.keys(baza[l].tematy).forEach(t => {
+        let btn = document.createElement("button");
+        btn.className = "btn-blue";
+        btn.innerText = t;
+        btn.onclick = () => startTopic(t);
+        container.appendChild(btn);
+    });
+    showView('view-topics');
+}
+
+function startTopic(t) {
+    currentSession.topic = t;
+    currentSession.words = Object.entries(baza[currentSession.lang].tematy[t]);
+    currentSession.index = 0;
+    currentSession.errors = [];
+    showView('view-game');
+    showNextWord();
+}
+
+function showNextWord() {
+    if (currentSession.index >= currentSession.words.length) {
+        finishTopic();
+        return;
+    }
+    document.getElementById("word-display").innerText = currentSession.words[currentSession.index][0];
+    document.getElementById("answer-input").value = "";
+    document.getElementById("answer-input").focus();
+}
+
 function checkAnswer() {
     const userAns = document.getElementById("answer-input").value.toLowerCase().trim();
-    if (userAns === currentTranslation) {
-        let zysk = 10 * mnoznik;
-        punkty += zysk;
-        alert("Dobrze! +" + zysk + " pkt");
+    const [foreign, correct] = currentSession.words[currentSession.index];
+    
+    if (userAns === correct) {
+        state.points[currentSession.lang] += 10 * state.bonus[currentSession.lang];
+        addXP(20);
     } else {
-        alert("Błąd! Poprawna odpowiedź to: " + currentTranslation);
+        currentSession.errors.push({word: foreign, correct: correct, user: userAns || "(puste)"});
     }
-    updateStats();
-    nextWord();
+    currentSession.index++;
+    saveGame(); // Zapisuj po każdej odpowiedzi!
+    showNextWord();
 }
+
+function addXP(amount) {
+    state.xp += amount;
+    let nextLevelXP = state.level * 100;
+    if (state.xp >= nextLevelXP) {
+        state.xp -= nextLevelXP;
+        state.level++;
+    }
+    updateUI();
+}
+
+function updateUI() {
+    let lang = currentSession.lang || "angielski";
+    document.getElementById("stat-points").innerText = `Punkty: ${state.points[lang]}`;
+    document.getElementById("stat-bonus").innerText = `Bonus: x${state.bonus[lang]}`;
+    document.getElementById("level-display").innerText = `Poziom ${state.level} (${state.xp}/${state.level*100} XP)`;
+    document.getElementById("xp-progress").style.width = (state.xp / (state.level*100) * 100) + "%";
+    
+    let cost = 50 * state.bonus[lang];
+    document.getElementById("btn-upgrade").innerText = `Kup Bonus x${state.bonus[lang]+1} (${cost} pkt)`;
+}
+
 function buyUpgrade() {
-    let cena = 50 * mnoznik;
-    if (punkty >= cena) {
-        punkty -= cena;
-        mnoznik++;
-        alert("Kupiono ulepszenie! Nowy bonus: x" + mnoznik);
+    let lang = currentSession.lang;
+    let cost = 50 * state.bonus[lang];
+    if (state.points[lang] >= cost) {
+        state.points[lang] -= cost;
+        state.bonus[lang]++;
+        saveGame();
+        updateUI();
+        alert("Ulepszono!");
     } else {
-        alert("Brakuje Ci " + (cena - punkty) + " pkt!");
+        alert("Brak punktów!");
     }
-    updateStats();
 }
-function updateStats() {
-    document.getElementById("stats").innerText = `Punkty: ${punkty} | Bonus: x${mnoznik}`;
+
+function finishTopic() {
+    showView('view-results');
+    document.getElementById("congrats-msg").innerText = currentSession.errors.length === 0 ? "Świetna nauka! 🌟" : "Dobry trening! 💪";
+    const errDiv = document.getElementById("error-list");
+    errDiv.innerHTML = "";
+    currentSession.words.forEach(([f, c]) => {
+        const err = currentSession.errors.find(e => e.word === f);
+        errDiv.innerHTML += `<div class='result-item'>${err ? '❌' : '✅'} <b>${f}</b> = ${c} ${err ? `<br><small>Twoja odp: <span class='error'>${err.user}</span></small>` : ''}</div>`;
+    });
 }
-nextWord();
+
+document.getElementById("answer-input").addEventListener("keyup", (e) => { if (e.key === "Enter") checkAnswer(); });
+updateUI(); // Pierwsze załadowanie
 </script>
 </body>
 </html>
+
