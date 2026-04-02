@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Learner Mobile</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        button { background: #007bff; color: white; border: none; padding: 15px 25px; border-radius: 10px; margin: 10px 5px; cursor: pointer; font-size: 16px; width: 100%; }
+        input { padding: 15px; width: calc(100% - 30px); margin-bottom: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        input:focus { border-color: #007bff; }
+        #stats { font-weight: bold; color: #555; margin-bottom: 20px; font-size: 18px; }
+        #word-display { font-size: 22px; font-weight: bold; margin-bottom: 20px; color: #333; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>🚀 Super Learner</h2>
+    <div id="stats">Punkty: 0 | Bonus: x1</div>
+    <div id="game-area">
+        <p id="word-display">Ładowanie...</p>
+        <input type="text" id="answer-input" placeholder="Twoja odpowiedź..." autofocus>
+        <button onclick="checkAnswer()">Sprawdź</button>
+        <button onclick="buyUpgrade()" style="background: #28a745;">Sklep (Ulepszenie: 50 pkt)</button>
+    </div>
+</div>
+<script>
+const slownik = {"apple (apl)": "jabłko", "banana (banena)": "banan", "pear (per)": "gruszka", "day (dej)": "dzień", "night (najt)": "noc", "week (łik)": "tydzień"};
+let punkty = 0, mnoznik = 1, currentWord = "", currentTranslation = "";
+function nextWord() {
+    const keys = Object.keys(slownik);
+    currentWord = keys[Math.floor(Math.random() * keys.length)];
+    currentTranslation = slownik[currentWord];
+    document.getElementById("word-display").innerText = `Jak jest po polsku: ${currentWord}?`;
+    document.getElementById("answer-input").value = "";
+}
+function checkAnswer() {
+    const userAns = document.getElementById("answer-input").value.toLowerCase().trim();
+    if (userAns === currentTranslation) {
+        let zysk = 10 * mnoznik;
+        punkty += zysk;
+        alert("Dobrze! +" + zysk + " pkt");
+    } else {
+        alert("Błąd! Poprawna odpowiedź to: " + currentTranslation);
+    }
+    updateStats();
+    nextWord();
+}
+function buyUpgrade() {
+    let cena = 50 * mnoznik;
+    if (punkty >= cena) {
+        punkty -= cena;
+        mnoznik++;
+        alert("Kupiono ulepszenie! Nowy bonus: x" + mnoznik);
+    } else {
+        alert("Brakuje Ci " + (cena - punkty) + " pkt!");
+    }
+    updateStats();
+}
+function updateStats() {
+    document.getElementById("stats").innerText = `Punkty: ${punkty} | Bonus: x${mnoznik}`;
+}
+nextWord();
+</script>
+</body>
+</html>
