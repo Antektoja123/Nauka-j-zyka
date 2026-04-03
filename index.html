@@ -2,172 +2,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nauka słówek i innych dziedzin</title>
+<title>Nauka słówek i dziedzin</title>
 <style>
-:root {--bg:#f5f7fb;--card:#ffffff;--text:#000;--primary:#4a6cf7;--good:#d4edda;--bad:#f8d7da;}
-.dark {--bg:#1e1e1e;--card:#2c2c2c;--text:#fff;}
-body {font-family: Arial;background: var(--bg);color: var(--text);margin:0;display:flex;justify-content:center;}
-.app {width:100%;max-width:500px;background:var(--card);min-height:100vh;border-radius:20px;}
-.header {background:var(--primary);color:white;padding:15px;text-align:center;}
-.content { padding:20px; text-align:center; }
-button {width:100%;padding:15px;margin:5px 0;border:none;border-radius:12px;font-weight:bold;cursor:pointer;}
-.blue { background:var(--primary); color:white; }
-.red { background:#dc3545; color:white; }
-input {width:100%;padding:15px;font-size:18px;border-radius:12px;border:2px solid #ccc;margin:10px 0;}
-.word { font-size:30px; margin:20px 0; }
-.feedback {padding:15px;border-radius:12px;margin:10px 0;display:none;}
-.hidden { display:none; }
-.important-content {text-align:left; padding:10px; background:#f0f0f0; border-radius:12px; margin:10px 0; max-height:400px; overflow-y:auto;}
-table {width:100%; border-collapse:collapse; margin:10px 0;}
+:root {
+  --bg: #f0f4ff;
+  --card: #ffffff;
+  --text: #111;
+  --primary: #4a6cf7;
+  --secondary: #6c78f7;
+  --good: #d4edda;
+  --bad: #f8d7da;
+  --hover: #3c5dc7;
+}
+.dark {
+  --bg: #1e1e1e;
+  --card: #2c2c2c;
+  --text: #f0f0f0;
+  --primary: #5a7cf7;
+  --secondary: #7a8cf7;
+  --good: #155724;
+  --bad: #721c24;
+  --hover: #3c5dc7;
+}
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+.app {
+  width: 100%;
+  max-width: 600px;
+  min-height: 100vh;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.header {
+  background: var(--primary);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-size: 1.3em;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header button {
+  background: var(--secondary);
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.header button:hover { background: var(--hover); }
+.content {
+  padding: 20px;
+}
+button {
+  width: 100%;
+  padding: 15px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+button:hover { transform: scale(1.02); }
+.blue { background: var(--primary); color:white; }
+.red { background: #dc3545; color:white; }
+input {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  margin: 10px 0;
+}
+.word {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 20px 0;
+  text-align: center;
+}
+.feedback {
+  padding: 15px;
+  border-radius: 12px;
+  margin: 10px 0;
+  display: none;
+  text-align: center;
+  font-weight: bold;
+}
+.hidden { display: none; }
+.card { background: var(--card); border-radius: 15px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.important-content {text-align:left; padding:15px; background:#e9ecef; border-radius:12px; margin:10px 0; max-height:400px; overflow-y:auto;}
+table {width:100%; border-collapse: collapse; margin:10px 0;}
 td, th {border:1px solid #ccc; padding:5px; text-align:left;}
-th {background:#e0e0e0;}
+th {background:#dfe2f3;}
 </style>
 </head>
 <body><div class="app">
-<div class="header">
-<h2>📚 Nauka słówek i innych dziedzin</h2>
-<div id="mode">Tryb: TEST</div>
-<button onclick="toggleTheme()">🌙 / ☀</button>
-<button onclick="shareApp()">📤 Udostępnij</button>
-</div><div class="content">
-<div id="main">
-<div id="languageButtons"></div>
-<button onclick="showCustom()">➕ Moje fiszki</button>
-<button class="blue" onclick="showImportant()">❗ Ważne</button>
-</div><div id="topics" class="hidden">
-<button onclick="show('main')">⬅</button>
-<div id="topicsList"></div>
-</div><div id="custom" class="hidden">
-<button onclick="show('main')">⬅</button>
-<h3>Twoje zestawy</h3>
-<div id="customList"></div>
-<input id="newTopic" placeholder="Nazwa zestawu">
-<button onclick="addTopic()">➕ Dodaj zestaw</button>
-</div><div id="edit" class="hidden">
-<button onclick="showCustom()">⬅</button>
-<h3 id="editTitle"></h3>
-<div id="wordsList"></div>
-<input id="w1" placeholder="Słowo / Pytanie">
-<input id="w2" placeholder="Tłumaczenie / Odpowiedź">
-<button onclick="addWord()">➕ Dodaj słowo</button>
-<button class="blue" onclick="startCustomGame()">▶ Start</button>
-<button onclick="translateWord()">🌍 Tłumacz</button>
-</div><div id="important" class="hidden">
-<button onclick="show('main')">⬅</button>
-<h3>❗ Ważne</h3>
-<div class="important-content" id="importantList"></div>
-</div><div id="game" class="hidden">
-<div id="feedback" class="feedback"></div>
-<div id="word" class="word"></div>
-<input id="input" placeholder="Wpisz odpowiedź...">
-<button onclick="action()" class="blue" id="btn">SPRAWDŹ</button>
-</div></div>
+  <div class="header">
+    <div>📚 Nauka słówek i dziedzin</div>
+    <div>
+      <button onclick="toggleTheme()">🌙 / ☀</button>
+      <button onclick="shareApp()">📤</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="main">
+      <div id="languageButtons"></div>
+      <button onclick="showCustom()">➕ Moje fiszki</button>
+      <button class="blue" onclick="showImportant()">❗ Ważne</button>
+      <div>
+        <label>Wybierz liczbę słów w rundzie:</label>
+        <select id="wordCount">
+          <option value="10">Bardzo mało (10)</option>
+          <option value="20">Trochę mało (20)</option>
+          <option value="30">Prawie mało (30)</option>
+          <option value="50">Trochę więcej (50)</option>
+        </select>
+      </div>
+    </div><div id="topics" class="hidden"><button onclick="show('main')">⬅</button><div id="topicsList"></div></div>
+<div id="custom" class="hidden">
+  <button onclick="show('main')">⬅</button>
+  <h3>Twoje zestawy</h3>
+  <div id="customList"></div>
+  <input id="newTopic" placeholder="Nazwa zestawu">
+  <button onclick="addTopic()">➕ Dodaj zestaw</button>
+</div>
+
+<div id="edit" class="hidden">
+  <button onclick="showCustom()">⬅</button>
+  <h3 id="editTitle"></h3>
+  <div id="wordsList"></div>
+  <input id="w1" placeholder="Słowo / Pytanie">
+  <input id="w2" placeholder="Tłumaczenie / Odpowiedź (synonimy , oddzielone przecinkami)">
+  <button onclick="addWord()">➕ Dodaj słowo</button>
+  <button class="blue" onclick="startCustomGame()">▶ Start</button>
+  <button onclick="translateWord()">🌍 Tłumacz</button>
+</div>
+
+<div id="important" class="hidden">
+  <button onclick="show('main')">⬅</button>
+  <h3>❗ Ważne</h3>
+  <div class="important-content" id="importantList"></div>
+</div>
+
+<div id="game" class="hidden">
+  <div id="feedback" class="feedback"></div>
+  <div id="word" class="word"></div>
+  <input id="input" placeholder="Wpisz odpowiedź...">
+  <button onclick="action()" class="blue" id="btn">SPRAWDŹ</button>
+</div>
+
+  </div>
 </div><script>
 let state = JSON.parse(localStorage.getItem("save")) || {
-  custom:{},
-  stats:{},
-  theme:"light",
-  languages:['angielski','hiszpański','matematyka','geografia']
+  custom:{}, stats:{}, theme:"light", languages:['angielski','hiszpański','włoski','matematyka','geografia']
 };
-
-let s = {words:[], index:0, wait:false};
-let currentTopic="";
-let currentLang="";
-let correct=0;
-
+let s={words:[], index:0, wait:false};
+let currentTopic="", currentLang="", correct=0;
 if(state.theme==="dark") document.body.classList.add("dark");
-function toggleTheme(){document.body.classList.toggle("dark");state.theme=document.body.classList.contains("dark")?"dark":"light";save();}
 
+function toggleTheme(){document.body.classList.toggle("dark");state.theme=document.body.classList.contains("dark")?"dark":"light";save();}
 function show(v){["main","topics","game","custom","edit","important"].forEach(x=>document.getElementById(x).classList.add("hidden"));document.getElementById(v).classList.remove("hidden");}
 function showImportant(){show("important"); drawImportant();}
 
-/* WYBÓR JĘZYKA */
 function drawLanguages(){
- let div = document.getElementById('languageButtons');
- div.innerHTML='';
- state.languages.forEach(lang=>{
-   let b=document.createElement('button');
-   b.className='blue';
-   b.innerText=lang;
-   b.onclick=()=>start(lang);
-   div.appendChild(b);
- });
- let addBtn=document.createElement('button');
- addBtn.innerText='+ Dodaj język';
- addBtn.onclick=addLanguage;
- div.appendChild(addBtn);
+  let div=document.getElementById('languageButtons'); div.innerHTML='';
+  state.languages.forEach(lang=>{
+    let b=document.createElement('button'); b.className='blue'; b.innerText=lang; b.onclick=()=>start(lang); div.appendChild(b);
+  });
+  let addBtn=document.createElement('button'); addBtn.innerText='+ Dodaj język'; addBtn.onclick=addLanguage; div.appendChild(addBtn);
 }
-
 function addLanguage(){
- let newLang=prompt('Podaj nazwę nowego języka / dziedziny:');
- if(newLang && !state.languages.includes(newLang)){
-   state.languages.push(newLang);
-   state.custom[newLang]={};
-   state.stats[newLang]={};
-   save();
-   drawLanguages();
- }
+  let newLang=prompt('Podaj nazwę nowego języka / dziedziny:');
+  if(newLang && !state.languages.includes(newLang)){
+    state.languages.push(newLang); state.custom[newLang]={}; state.stats[newLang]={}; save(); drawLanguages();
+  }
 }
 
-/* CUSTOM */
-function showCustom(){show("custom");drawCustom();}
-function drawCustom(){let div=document.getElementById("customList");div.innerHTML="";
- Object.keys(state.custom).forEach(lang=>{
- Object.keys(state.custom[lang]).forEach(t=>{
-   let wrap=document.createElement("div");
-   let b=document.createElement("button"); b.innerText=`[${lang}] ${t}`; b.onclick=()=>editTopic(lang,t);
-   let del=document.createElement("button"); del.innerText="❌"; del.onclick=()=>deleteTopic(lang,t);
-   wrap.appendChild(b); wrap.appendChild(del); div.appendChild(wrap);
- });
-});
+function showCustom(){show("custom"); drawCustom();}
+function drawCustom(){let div=document.getElementById("customList"); div.innerHTML="";
+  Object.keys(state.custom).forEach(lang=>{
+    Object.keys(state.custom[lang]).forEach(t=>{
+      let wrap=document.createElement("div");
+      let b=document.createElement("button"); b.innerText=`[${lang}] ${t}`; b.onclick=()=>editTopic(lang,t);
+      let del=document.createElement("button"); del.innerText="❌"; del.onclick=()=>deleteTopic(lang,t);
+      wrap.appendChild(b); wrap.appendChild(del); div.appendChild(wrap);
+    });
+  });
 }
 function addTopic(){let lang=prompt('Dla którego języka / dziedziny?'); let name=document.getElementById("newTopic").value; if(!lang||!name) return; if(!state.custom[lang]) state.custom[lang]={}; state.custom[lang][name]=[]; save(); drawCustom();}
 function deleteTopic(lang,t){if(confirm("Usunąć zestaw?")){delete state.custom[lang][t]; save(); drawCustom();}}
 function editTopic(lang,t){currentTopic=t; currentLang=lang; show("edit"); document.getElementById("editTitle").innerText=`[${lang}] ${t}`; drawWords();}
 
-/* GAME */
-function startCustomGame(){s.words=state.custom[currentLang][currentTopic]; s.index=0; correct=0; show("game"); next();}
-function next(){s.wait=false; document.getElementById("btn").innerText="SPRAWDŹ"; document.getElementById("feedback").style.display="none"; if(s.index>=s.words.length){
-   if(!state.stats[currentLang]) state.stats[currentLang]={};
-   if(!state.stats[currentLang][currentTopic]) state.stats[currentLang][currentTopic]=[];
-   state.stats[currentLang][currentTopic].push(Math.round(correct/s.words.length*100));
-   save();
-   alert(`Wynik: ${correct}/${s.words.length}`);
-   show("custom"); return;
+function startCustomGame(){
+  s.words=state.custom[currentLang][currentTopic];
+  let count=parseInt(document.getElementById('wordCount').value);
+  if(s.words.length>count) s.words=s.words.slice(0,count);
+  s.index=0; correct=0; show("game"); next();
 }
- let w=s.words[s.index]; document.getElementById("word").innerText=w[0]; document.getElementById("input").value="";}
+function next(){
+  s.wait=false; document.getElementById("btn").innerText="SPRAWDŹ"; document.getElementById("feedback").style.display="none";
+  if(s.index>=s.words.length){
+    if(!state.stats[currentLang]) state.stats[currentLang]={};
+    if(!state.stats[currentLang][currentTopic]) state.stats[currentLang][currentTopic]=[];
+    state.stats[currentLang][currentTopic].push(Math.round(correct/s.words.length*100));
+    save(); alert(`Wynik: ${correct}/${s.words.length}`); show("custom"); return;
+  }
+  let w=s.words[s.index]; document.getElementById("word").innerText=w[0]; document.getElementById("input").value="";
+}
 function action(){if(s.wait){s.index++;next();}else{check();}}
-function check(){let val=document.getElementById("input").value.toLowerCase(); let correctWord=s.words[s.index][1]; let fb=document.getElementById("feedback"); fb.style.display="block"; s.wait=true; document.getElementById("btn").innerText="DALEJ"; if(val===correctWord.toLowerCase()){fb.innerHTML="Dobrze ✔"; fb.style.background="var(--good)"; correct++;}else{fb.innerHTML="Źle ❌<br>"+correctWord; fb.style.background="var(--bad)";}}
+function check(){
+  let val=document.getElementById("input").value.toLowerCase();
+  let correctList=Array.isArray(s.words[s.index][1])?s.words[s.index][1]:[s.words[s.index][1]];
+  let fb=document.getElementById("feedback"); fb.style.display="block"; s.wait=true; document.getElementById("btn").innerText="DALEJ";
+  if(correctList.some(ans=>ans.toLowerCase()===val)){fb.innerHTML="Dobrze ✔"; fb.style.background="var(--good)"; correct++;}
+  else{fb.innerHTML="Źle ❌<br>"+correctList[0]; fb.style.background="var(--bad)";}
+}
 
-/* TRANSLATE ONLINE */
 async function translateWord(){if(!navigator.onLine){alert("Brak internetu ❌"); return;} let word=document.getElementById("w1").value; if(!word) return; try{let res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|pl`); let data=await res.json(); document.getElementById("w2").value=data.responseData.translatedText;}catch(e){alert("Błąd tłumaczenia");}}
 
-/* SHARE */
-function shareApp(){navigator.clipboard.writeText(window.location.href).then(()=>alert("Link skopiowany do schowka ✅")).catch(()=>prompt("Skopiuj link:", window.location.href));}
+function shareApp(){navigator.clipboard.writeText(window.location.href).then(()=>alert("Link skopiowany ✅")).catch(()=>prompt("Skopiuj link:", window.location.href));}
 
-/* WAŻNE */
 function drawImportant(){
- const div=document.getElementById('importantList');
- div.innerHTML='';
- div.innerHTML=`
-<h4>Hiszpański - zaimki i czasownik 'ser'</h4>
-<table><tr><th>Zaimki</th><th>Ser</th><th>Wyjaśnienie</th></tr>
-<tr><td>yo</td><td>soy</td><td>pierwsza osoba liczby pojedynczej - ja jestem</td></tr>
-<tr><td>tú</td><td>eres</td><td>druga osoba liczby pojedynczej - ty jesteś</td></tr>
-<tr><td>él/ella/usted</td><td>es</td><td>trzecia osoba liczby pojedynczej / forma grzecznościowa</td></tr>
-<tr><td>nosotros/nosotras</td><td>somos</td><td>pierwsza osoba liczby mnogiej - my jesteśmy</td></tr>
-<tr><td>vosotros/vosotras</td><td>sois</td><td>druga osoba liczby mnogiej - wy jesteście</td></tr>
-<tr><td>ellos/ellas/ustedes</td><td>son</td><td>trzecia osoba liczby mnogiej - oni/one</td></tr>
-</table>
-<h4>Angielski - alfabet</h4>
-<table><tr><th>Litera</th><th>Wymowa</th><th>Przykład</th></tr>
-<tr><td>A</td><td>/eɪ/</td><td>apple</td></tr>
-<tr><td>B</td><td>/biː/</td><td>ball</td></tr>
-<tr><td>C</td><td>/siː/</td><td>cat</td></tr>
-</table>
-`;
+  const div=document.getElementById('importantList'); div.innerHTML='';
+  div.innerHTML=`<h4>Hiszpański - zaimki i czasownik 'ser'</h4>
+  <table><tr><th>Zaimki</th><th>Ser</th><th>Wyjaśnienie</th></tr>
+  <tr><td>yo</td><td>soy</td><td>pierwsza osoba liczby pojedynczej</td></tr>
+  <tr><td>tú</td><td>eres</td><td>druga osoba liczby pojedynczej</td></tr>
+  <tr><td>él/ella/usted</td><td>es</td><td>trzecia osoba liczby pojedynczej</td></tr>
+  </table>
+  <h4>Angielski - alfabet</h4>
+  <table><tr><th>Litera</th><th>Wymowa</th><th>Przykład</th></tr>
+  <tr><td>A</td><td>/eɪ/</td><td>apple</td></tr>
+  <tr><td>B</td><td>/biː/</td><td>ball</td></tr>
+  </table>`;
 }
-
 function save(){localStorage.setItem("save",JSON.stringify(state));}
+
+drawLanguages();
 </script></body>
 </html>
