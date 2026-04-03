@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fiszki PRO - Projekt Finalny</title>
+<title>Fiszki PRO - Final Fix</title>
 <style>
 :root { --bg: #f4f7fe; --card: #ffffff; --text: #2d3436; --primary: #0984e3; --good: #55efc4; --warn: #ffeaa7; --bad: #ff7675; }
 .dark { --bg: #2d3436; --card: #353b48; --text: #f5f6fa; --primary: #74b9ff; --good: #00b894; --warn: #fdcb6e; --bad: #d63031; }
@@ -14,13 +14,11 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
 button { width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 15px; }
 .blue { background: var(--primary); color:white; }
 .gray { background: #b2bec3; color:white; }
-input, select { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #dfe6e9; margin: 8px 0; font-size: 16px; box-sizing: border-box; }
+input, select { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #dfe6e9; margin: 8px 0; box-sizing: border-box; }
 .hidden { display: none; }
 .word-display { font-size: 36px; font-weight: 900; margin: 30px 0; text-align: center; color: var(--primary); }
 .fb-box { padding: 15px; border-radius: 12px; margin: 15px 0; display: none; text-align: center; font-weight: bold; }
-.scroll-area { max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; margin: 10px 0; font-size: 14px; }
-table { width:100%; border-collapse: collapse; margin-top: 10px; }
-td, th { border:1px solid #ddd; padding:10px; text-align: left; }
+.scroll-area { max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; margin: 10px 0; font-size: 14px; border: 1px solid #ccc; }
 </style>
 </head>
 <body>
@@ -29,217 +27,164 @@ td, th { border:1px solid #ddd; padding:10px; text-align: left; }
     <div id="nav-title">🏠 Lobby</div>
     <button onclick="toggleTheme()" style="width:auto; padding: 5px 15px;">🌙/☀</button>
   </div>
-
   <div class="content">
-    <!-- LOBBY -->
     <div id="lobby">
-      <h3>Wybierz dziedzinę nauki:</h3>
+      <h3>Wybierz przedmiot:</h3>
       <div id="lang-list"></div>
-      <button onclick="addNewLang()" class="gray">+ Dodaj nowy przedmiot</button>
+      <button onclick="addNewLang()" class="gray">+ Dodaj nową dziedzinę</button>
     </div>
-
-    <!-- MENU JĘZYKA -->
     <div id="menu" class="hidden">
       <button class="gray" onclick="show('lobby')">⬅ Lobby</button>
       <h2 id="menu-lang"></h2>
-      <button class="blue" onclick="drawTopics()">📚 Wybierz Zestaw / Fiszki</button>
-      <button style="background:#fdcb6e; color:#2d3436;" onclick="showImportant()">❗ Ważne Informacje (Wiki)</button>
+      <button class="blue" onclick="drawTopics()">📚 Zestawy / Fiszki</button>
+      <button style="background:#fdcb6e; color:#000;" onclick="showWiki()">❗ Ważne (Wiki Offline)</button>
     </div>
-
-    <!-- LISTA TEMATÓW -->
     <div id="topics" class="hidden">
       <button class="gray" onclick="show('menu')">⬅ Menu</button>
       <div id="topics-render"></div>
       <hr>
-      <input id="new-topic-in" placeholder="Np. Kolory, Azja, Potęgi...">
+      <input id="new-topic-in" placeholder="Nazwa zestawu (np. Zwierzęta)">
       <button class="blue" onclick="createTopic()">➕ Stwórz nowy zestaw</button>
     </div>
-
-    <!-- EDYCJA I GRA -->
     <div id="edit" class="hidden">
-      <button class="gray" onclick="drawTopics()">⬅ Powrót do tematów</button>
-      <h3 id="edit-topic-title"></h3>
-      <div style="background:#ecf0f1; padding:15px; border-radius:15px; margin-bottom:15px;">
-        <label>Liczba słów w rundzie:</label>
-        <select id="game-count">
-          <option value="10">10 słów</option>
-          <option value="25">25 słów</option>
-          <option value="999">Wszystkie</option>
-        </select>
-        <button class="blue" onclick="startGame()">▶ ROZPOCZNIJ NAUKĘ</button>
+      <button class="gray" onclick="drawTopics()">⬅ Powrót</button>
+      <h3 id="edit-title"></h3>
+      <div style="background:#eee; padding:15px; border-radius:12px; margin-bottom:15px;">
+        <select id="game-count"><option value="10">10 słów</option><option value="25">25 słów</option><option value="999">Wszystkie</option></select>
+        <button class="blue" onclick="startGame()">▶ START</button>
       </div>
-      <h4>Zarządzaj słowami:</h4>
-      <input id="w-q" placeholder="Pytanie / Kraj / Słowo">
-      <input id="w-a" placeholder="Odpowiedź / Stolica / Tłumaczenie">
-      <div style="display:flex; gap:5px;">
-        <button onclick="autoFill()" class="gray" style="font-size:12px;">🔍 Szukaj odp.</button>
-        <button onclick="addWord()" class="blue">➕ Dodaj</button>
-      </div>
+      <h4>Dodaj fiszkę:</h4>
+      <input id="w-q" placeholder="Pytanie / Słowo">
+      <input id="w-a" placeholder="Odpowiedź / Tłumaczenie">
+      <button onclick="addWord()" class="blue">➕ Dodaj do listy</button>
       <div id="word-list-view" class="scroll-area"></div>
     </div>
-
-    <!-- GRA -->
     <div id="game" class="hidden">
       <div id="fb" class="fb-box"></div>
       <div id="display-word" class="word-display"></div>
-      <input id="user-input" placeholder="Wpisz odpowiedź..." autocomplete="off">
-      <button id="check-btn" class="blue" onclick="handleGameAction()">SPRAWDŹ</button>
+      <input id="user-input" placeholder="Twoja odpowiedź..." autocomplete="off">
+      <button id="check-btn" class="blue" onclick="handleAction()">SPRAWDŹ</button>
     </div>
-
-    <!-- WYNIKI -->
     <div id="result" class="hidden">
       <h2 id="final-score"></h2>
       <div id="error-summary"></div>
       <button class="blue" onclick="show('menu')">GOTOWE</button>
     </div>
-
-    <!-- WAŻNE -->
-    <div id="important" class="hidden">
+    <div id="wiki" class="hidden">
       <button class="gray" onclick="show('menu')">⬅ Menu</button>
       <div id="wiki-content" style="margin-top:20px;"></div>
     </div>
   </div>
 </div>
-
 <script>
-// --- ROZBUDOWANA BAZA DANYCH ---
-const baseData = {
+const base = {
   "Angielski": {
-    "🍎 Owoce i Warzywa": [["Apple","Jabłko"],["Pear","Gruszka"],["Plum","Śliwka"],["Grape","Winogrono"],["Watermelon","Arbuz"],["Tomato","Pomidor"],["Potato","Ziemniak"],["Onion","Cebula"],["Garlic","Czosnek"],["Carrot","Marchewka"]],
-    "🎨 Kolory": [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"],["Yellow","Żółty"],["Black","Czarny"],["White","Biały"],["Purple","Fioletowy"],["Orange","Pomarańczowy"]],
-    "🔢 Liczby 1-20": [["One","Jeden"],["Two","Dwa"],["Three","Trzy"],["Ten","Dziesięć"],["Eleven","Jedenaście"],["Twelve","Dwanaście"],["Twenty","Dwadzieścia"]],
-    "💬 Podstawy": [["Hello","Cześć"],["Thank you","Dziękuję"],["Please","Proszę"],["Goodbye","Do widzenia"],["Sorry","Przepraszam"]]
+    "🍎 Owoce": [["Apple","Jabłko"],["Pear","Gruszka"],["Plum","Śliwka"],["Grape","Winogrono"],["Watermelon","Arbuz"]],
+    "🎨 Kolory": [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"],["Yellow","Żółty"],["Black","Czarny"]]
+  },
+  "Hiszpański": {
+    "🍎 Frutas": [["Manzana","Jabłko"],["Naranja","Pomarańcza"],["Plátano","Banan"],["Fresa","Truskawka"]],
+    "🎨 Colores": [["Rojo","Czerwony"],["Azul","Niebieski"],["Verde","Zielony"],["Amarillo","Żółty"]]
   },
   "Geografia": {
-    "🌍 Europa": [["Polska","Warszawa"],["Niemcy","Berlin"],["Francja","Paryż"],["Włochy","Rzym"],["Hiszpania","Madryt"],["Grecja","Ateny"],["Portugalia","Lizbona"]],
-    "🌏 Azja": [["Chiny","Pekin"],["Japonia","Tokio"],["Indie","New Delhi"],["Korea Południowa","Seul"],["Tajlandia","Bangkok"]],
-    "🏔 Góry": [["Mount Everest","Himalaje"],["K2","Karakorum"],["Mont Blanc","Alpy"],["Rysy","Tatry"],["Aconcagua","Andy"]]
+    "🌍 Europa": [["Polska","Warszawa"],["Niemcy","Berlin"],["Francja","Paryż"],["Włochy","Rzym"],["Hiszpania","Madryt"]],
+    "🌏 Azja": [["Chiny","Pekin"],["Japonia","Tokio"],["Indie","New Delhi"]]
   },
   "Matematyka": {
-    "⚡ Potęgi": [["2^2","4"],["2^3","8"],["3^2","9"],["4^2","16"],["5^2","25"],["10^2","100"]],
-    "√ Pierwiastki": [["√4","2"],["√9","3"],["√16","4"],["√25","5"],["√100","10"]]
+    "⚡ Potęgi": [["2^2","4"],["3^2","9"],["4^2","16"],["5^2","25"],["10^2","100"]]
   }
 };
 
-let db = JSON.parse(localStorage.getItem("fiszki_expert_v5")) || { custom: baseData, langs: Object.keys(baseData), knowledge: {}, theme: "light" };
-let state = { lang: "", topic: "", words: [], idx: 0, ok: 0, errs: [], waiting: false };
+let db = JSON.parse(localStorage.getItem("f_pro_v6")) || { custom: base, langs: Object.keys(base), kn: {}, theme: "light" };
+let cur = { l: "", t: "", w: [], idx: 0, ok: 0, errs: [], wait: false };
 
-function save() { localStorage.setItem("fiszki_expert_v5", JSON.stringify(db)); }
+function save() { localStorage.setItem("f_pro_v6", JSON.stringify(db)); }
 function show(id) { 
   document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden')); 
   document.getElementById(id).classList.remove('hidden'); 
-  document.getElementById('nav-title').innerText = id === 'lobby' ? "🏠 Lobby" : "📖 " + state.lang;
 }
 
 function drawLobby() {
   const list = document.getElementById('lang-list'); list.innerHTML = '';
   db.langs.forEach(l => {
     let b = document.createElement('button'); b.className = 'blue'; b.innerText = l;
-    b.onclick = () => { state.lang = l; document.getElementById('menu-lang').innerText = l; show('menu'); };
+    b.onclick = () => { cur.l = l; document.getElementById('menu-lang').innerText = l; show('menu'); };
     list.appendChild(b);
   });
 }
 
+function addNewLang() { let n = prompt("Nazwa przedmiotu:"); if(n) { db.langs.push(n); db.custom[n] = {}; save(); drawLobby(); } }
+
 function drawTopics() {
   show('topics'); const list = document.getElementById('topics-render'); list.innerHTML = '';
-  if(!db.custom[state.lang]) db.custom[state.lang] = {};
-  Object.keys(db.custom[state.lang]).forEach(t => {
-    let b = document.createElement('button'); b.innerText = `${t} (${db.custom[state.lang][t].length})`;
-    b.onclick = () => { state.topic = t; openEdit(); }; list.appendChild(b);
+  if(!db.custom[cur.l]) db.custom[cur.l] = {};
+  Object.keys(db.custom[cur.l]).forEach(t => {
+    let b = document.createElement('button'); b.innerText = `${t} (${db.custom[cur.l][t].length})`;
+    b.onclick = () => { cur.t = t; openEdit(); }; list.appendChild(b);
   });
 }
 
-function openEdit() {
-  show('edit'); document.getElementById('edit-topic-title').innerText = state.topic;
-  renderWordList();
+function createTopic() {
+  let n = document.getElementById('new-topic-in').value; if(!n) return;
+  db.custom[cur.l][n] = []; save(); drawTopics(); document.getElementById('new-topic-in').value = '';
 }
 
-function renderWordList() {
+function openEdit() {
+  show('edit'); document.getElementById('edit-title').innerText = cur.t;
   const v = document.getElementById('word-list-view');
-  const items = db.custom[state.lang][state.topic];
-  v.innerHTML = items.length ? items.map(w => `<div>• <b>${w[0]}</b> = ${w[1]}</div>`).join('') : "Brak słówek. Dodaj pierwsze!";
+  v.innerHTML = db.custom[cur.l][cur.t].map(w => `• ${w[0]} = ${w[1]}`).join('<br>') || "Zestaw pusty.";
 }
 
 function addWord() {
   let q = document.getElementById('w-q').value, a = document.getElementById('w-a').value;
-  if(!q || !a) return; db.custom[state.lang][state.topic].push([q, a]);
-  save(); renderWordList(); document.getElementById('w-q').value = ''; document.getElementById('w-a').value = '';
+  if(!q || !a) return; db.custom[cur.l][cur.t].push([q, a]);
+  save(); openEdit(); document.getElementById('w-q').value = ''; document.getElementById('w-a').value = '';
 }
 
-// --- AUTOMATYCZNE PODPOWIEDZI (ONLINE/LOCAL) ---
-async function autoFill() {
-  let q = document.getElementById('w-q').value; if(!q) return;
-  document.getElementById('w-a').placeholder = "Szukam...";
-  try {
-    let res = await fetch(`https://translated.net{encodeURIComponent(q)}&langpair=pl|en`);
-    let data = await res.json();
-    document.getElementById('w-a').value = data.responseData.translatedText;
-  } catch(e) { alert("Błąd połączenia. Wpisz ręcznie."); }
+function startGame() {
+  let all = db.custom[cur.l][cur.t]; if(!all.length) return alert("Brak słówek!");
+  let c = parseInt(document.getElementById('game-count').value);
+  cur.w = [...all].sort(() => 0.5 - Math.random()).slice(0, c);
+  cur.idx = 0; cur.ok = 0; cur.errs = []; show('game'); nextW();
 }
 
-// --- INTELIGENTNA TOLERANCJA (Levenshtein) ---
-function getLev(s1, s2) {
-  s1 = s1.toLowerCase().trim(); s2 = s2.toLowerCase().trim();
-  if(s1 === s2) return 0;
-  if(s1.includes(s2) || s2.includes(s1)) return 1; // Tolerancja dla "dzięki" vs "dziękuję"
+function nextW() {
+  cur.wait = false; document.getElementById('fb').style.display = 'none';
+  document.getElementById('check-btn').innerText = "SPRAWDŹ";
+  if(cur.idx >= cur.w.length) return fin();
+  document.getElementById('display-word').innerText = cur.w[cur.idx][0];
+  document.getElementById('user-input').value = ''; document.getElementById('user-input').focus();
+}
+
+function handleAction() {
+  if(cur.wait) { cur.idx++; nextW(); return; }
+  let u = document.getElementById('user-input').value.trim().toLowerCase();
+  let r = cur.w[cur.idx][1].toLowerCase();
+  let f = document.getElementById('fb'); f.style.display = 'block'; cur.wait = true;
+  document.getElementById('check-btn').innerText = "DALEJ";
+  
+  if(u === r) { f.innerText = "Idealnie! ✔"; f.style.background = "var(--good)"; cur.ok++; }
+  else if (lev(u, r) <= 2) { f.innerText = `Prawie! Poprawnie: ${cur.w[cur.idx][1]}`; f.style.background = "var(--warn)"; cur.ok++; }
+  else { f.innerText = `Błąd! Poprawnie: ${cur.w[cur.idx][1]}`; f.style.background = "var(--bad)"; cur.errs.push(`${cur.w[cur.idx][0]} -> ${cur.w[cur.idx][1]}`); }
+}
+
+function fin() {
+  show('result'); document.getElementById('final-score').innerText = `Wynik: ${cur.ok} / ${cur.w.length}`;
+  document.getElementById('error-summary').innerHTML = cur.errs.length ? "<b>Powtórz:</b><br>" + cur.errs.join('<br>') : "Perfekcyjnie! 🏆";
+}
+
+function lev(s1, s2) {
   let costs = []; for(let i=0; i<=s1.length; i++){let last=i; for(let j=0; j<=s2.length; j++){if(i==0)costs[j]=j; else if(j>0){let nv=costs[j-1]; if(s1[i-1]!=s2[j-1]) nv=Math.min(Math.min(nv,last),costs[j])+1; costs[j-1]=last; last=nv;}} if(i>0)costs[s2.length]=last;}
   return costs[s2.length];
 }
 
-function startGame() {
-  let all = db.custom[state.lang][state.topic]; if(!all.length) return;
-  let count = parseInt(document.getElementById('game-count').value);
-  state.words = [...all].sort(() => 0.5 - Math.random()).slice(0, count);
-  state.idx = 0; state.ok = 0; state.errs = []; show('game'); nextWord();
-}
-
-function nextWord() {
-  state.waiting = false; document.getElementById('fb').style.display = 'none';
-  document.getElementById('check-btn').innerText = "SPRAWDŹ";
-  if(state.idx >= state.words.length) return showResult();
-  document.getElementById('display-word').innerText = state.words[state.idx][0];
-  document.getElementById('user-input').value = ''; document.getElementById('user-input').focus();
-}
-
-function handleGameAction() {
-  if(state.waiting) { state.idx++; nextWord(); return; }
-  let user = document.getElementById('user-input').value;
-  let correct = state.words[state.idx][1];
-  let dist = getLev(user, correct);
-  let fb = document.getElementById('fb'); fb.style.display = 'block'; state.waiting = true;
-  document.getElementById('check-btn').innerText = "DALEJ";
-
-  if(dist <= 2) { // Tolerancja błędów i literówek
-    fb.innerHTML = dist === 0 ? "Idealnie! ✔" : `Prawie dobrze! Chodziło o: <b>${correct}</b>`;
-    fb.style.background = dist === 0 ? "var(--good)" : "var(--warn)"; state.ok++;
-  } else {
-    fb.innerHTML = `Błąd! Poprawnie: <b>${correct}</b>`; fb.style.background = "var(--bad)";
-    state.errs.push(`${state.words[state.idx][0]} -> ${correct}`);
-  }
-}
-
-function showResult() {
-  show('result'); document.getElementById('final-score').innerText = `Wynik: ${state.ok} / ${state.words.length}`;
-  document.getElementById('error-summary').innerHTML = state.errs.length ? "<b>Powtórz:</b><br>" + state.errs.join('<br>') : "Perfekcyjnie! 🏆";
-}
-
-async function showImportant() {
-  show('important'); const c = document.getElementById('wiki-content');
-  if(db.knowledge[state.lang]) {
-    c.innerHTML = `<div class="scroll-area"><h3>Zasady: ${state.lang}</h3>${db.knowledge[state.lang]}</div><button onclick="deleteWiki()" class="gray">Usuń i pobierz ponownie</button>`;
-  } else {
-    c.innerHTML = `<p>Brak zapisanych danych. Pobierz teraz, aby działały offline!</p><button class="blue" onclick="fetchWiki()">🌐 POBIERZ Z SIECI</button>`;
-  }
-}
-
-async function fetchWiki() {
-  const c = document.getElementById('wiki-content'); c.innerHTML = "🔄 Pobieranie danych...";
-  try {
-    let q = state.lang === "Geografia" ? "Geografia" : `Gramatyka_języka_${state.lang.toLowerCase()}`;
-    let res = await fetch(`https://wikipedia.org{encodeURIComponent(q)}`);
-    let data = await res.json();
-    db.knowledge[state.lang] = data.extract || "Brak szczegółowego opisu."; save(); showImportant();
-  } catch(e) { alert("Brak internetu!"); showImportant(); }
+async function showWiki() {
+  show('wiki'); const c = document.getElementById('wiki-content');
+  if(db.kn[cur.l]) c.innerHTML = `<div class="scroll-area">${db.kn[cur.l]}</div>`;
+  else { c.innerHTML = "🔄 Pobieranie zasad..."; try {
+    let res = await fetch(`https://wikipedia.org{encodeURIComponent(cur.l)}`);
+    let data = await res.json(); db.kn[cur.l] = data.extract; save(); showWiki();
+  } catch(e) { c.innerHTML = "Błąd pobierania (brak internetu)."; }}
 }
 
 function toggleTheme() { document.body.classList.toggle("dark"); db.theme = document.body.classList.contains("dark") ? "dark" : "light"; save(); }
