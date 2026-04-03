@@ -42,7 +42,8 @@ th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
       <button class="gray" onclick="show('lobby')">⬅ Lobby</button>
       <h2 id="menu-lang"></h2>
       <button class="blue" onclick="drawTopics()">📂 Zestawy</button>
-      <button style="background:#ffc107; color:#000;" onclick="alert('Pobieranie zasad...')">❗ Ważne Info</button>
+      <button style="background:#ffc107; color:#000;" onclick="showInfo()">❗ Ważne Info</button>
+      <button class="gray" onclick="showStats()">📊 Statystyki</button>
     </div>
     <div id="topics" class="hidden">
       <button class="gray" onclick="show('menu')">⬅ Menu</button>
@@ -56,6 +57,7 @@ th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
       <div style="display:flex; gap:5px; align-items:center;">
         <h3 id="edit-title" style="flex:1;"></h3>
         <button onclick="renameTopic()" class="gray" style="width:auto; padding:5px 10px;">✏️ Nazwa</button>
+        <button onclick="deleteTopic()" class="gray" style="width:auto; padding:5px 10px; background:#ff4757;">🗑 Usuń zestaw</button>
       </div>
       <div style="background:rgba(0,0,0,0.05); padding:10px; border-radius:12px; margin-bottom:10px;">
         <select id="game-count"><option value="10">10 słów</option><option value="25">25 słów</option><option value="50">50 słów</option><option value="999">Wszystkie</option></select>
@@ -87,111 +89,61 @@ th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
 </div>
 
 <script>
-// Baza danych została w pamięci (używam poprzedniej struktury)
+// ===== Baza danych =====
 const realData = {
-  "Angielski": { "🍎 Owoce": [["Apple","Jabłko"],["Banana","Banan"],["Orange","Pomarańcza"],["Strawberry","Truskawka"],["Pineapple","Ananas"]], "💬 Zwroty": [["Hello","Cześć"],["Thank you","Dziękuję"],["Please","Proszę"]] },
-  "Geografia": { "🌏 Azja": [["Chiny","Pekin"],["Japonia","Tokio"],["Indie","New Delhi"],["Tajlandia","Bangkok"]] },
-  "Matematyka": { "√ Pierwiastki": [["√4","2"],["√9","3"],["√16","4"],["√25","5"]] }
+  "Angielski": {
+    "🍎 Owoce": [["Apple", ["Jabłko","Jablko"]], ["Banana", ["Banan"]], ["Orange", ["Pomarańcza"]]],
+    "🎨 Kolory": [["Red", ["Czerwony"]], ["Blue", ["Niebieski"]], ["Green", ["Zielony"]]]
+  },
+  "Hiszpański": {
+    "🍎 Owoce": [["Manzana", ["Jabłko"]], ["Plátano", ["Banan"]], ["Naranja", ["Pomarańcza"]]],
+    "💬 Zwroty": [["Hola", ["Cześć"]], ["Gracias", ["Dziękuję","Dzięki"]]]
+  },
+  "Matematyka": {
+    "√ Pierwiastki": [["√4", ["2"]], ["√9", ["3"]], ["√16", ["4"]]]
+  }
 };
 
-let db = JSON.parse(localStorage.getItem("f_expert_v9")) || { custom: realData, langs: Object.keys(realData), theme: "light" };
-let cur = { l: "", t: "", w: [], idx: 0, ok: 0, errorsToRetry: [], wait: false, round: 1 };
+let db = JSON.parse(localStorage.getItem("f_expert_v11")) || { custom: realData, langs: Object.keys(realData), theme: "light", stats:{ok:0,bad:0,rounds:0} };
+let cur = { l:"", t:"", w:[], idx:0, ok:0, errorsToRetry:[], wait:false, round:1 };
 
-function save() { localStorage.setItem("f_expert_v9", JSON.stringify(db)); }
-function show(id) { document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+// ===== SYNONIMY =====
+let synonyms = { "dziękuję":["dzięki","dziekuje","dzieki"], "ojciec":["tata","tatuś"], "ziemniak":["kartofel","pyra","grula"] };
+fetch('synonyms_pl.json').then(res=>res.json()).then(data=>Object.assign(synonyms,data)).catch(e=>console.warn("Nie wczytano synonyms_pl.json",e));
 
-function drawLobby() {
-  const list = document.getElementById('lang-list'); list.innerHTML = '';
-  db.langs.forEach(l => {
-    let b = document.createElement('button'); b.className = 'blue'; b.innerText = l;
-    b.onclick = () => { cur.l = l; document.getElementById('menu-lang').innerText = l; show('menu'); };
-    list.appendChild(b);
-  });
-}
+// ===== Funkcje podstawowe =====
+function save(){ localStorage.setItem("f_expert_v11",JSON.stringify(db)); }
+function show(id){ document.querySelectorAll('.content > div').forEach(d=>d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function normalize(txt){ return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ł/g,"l"); }
 
-function drawTopics() {
-  show('topics'); const list = document.getElementById('topics-render'); list.innerHTML = '';
-  Object.keys(db.custom[cur.l] || {}).forEach(t => {
-    let b = document.createElement('button'); b.innerText = `${t} (${db.custom[cur.l][t].length})`;
-    b.onclick = () => { cur.t = t; openEdit(); }; list.appendChild(b);
-  });
-}
+// ===== LOBBY =====
+function drawLobby(){ const list=document.getElementById('lang-list'); list.innerHTML=''; db.langs.forEach(l=>{ let b=document.createElement('button'); b.className='blue'; b.innerText=l; b.onclick=()=>{ cur.l=l; document.getElementById('menu-lang').innerText=l; show('menu'); }; list.appendChild(b); }); }
+function addNewLang(){ let name=prompt("Podaj nazwę dziedziny:"); if(!name) return; if(!db.custom[name]){ db.custom[name]={ "🍎 Owoce":[["Test",["Test"]]], "🎨 Kolory":[["Red",["Czerwony"]]], "💬 Zwroty":[["Hello",["Cześć"]]] }; db.langs.push(name); save(); drawLobby(); } }
 
-function openEdit() {
-  show('edit'); document.getElementById('edit-title').innerText = cur.t;
-  const v = document.getElementById('word-list-view');
-  v.innerHTML = db.custom[cur.l][cur.t].map((w, i) => `<div class="word-item"><span>${w[0]} = ${w[1]}</span><button class="del-btn" onclick="deleteWord(${i})">Usuń</button></div>`).join('');
-}
+// ===== TOPICS =====
+function drawTopics(){ show('topics'); const list=document.getElementById('topics-render'); list.innerHTML=''; Object.keys(db.custom[cur.l]||{}).forEach(t=>{ let b=document.createElement('button'); b.innerText=`${t} (${db.custom[cur.l][t].length})`; b.onclick=()=>{ cur.t=t; openEdit(); }; list.appendChild(b); }); }
+function createTopic(){ let name=document.getElementById('new-topic-in').value; if(!name) return; if(!db.custom[cur.l][name]){ db.custom[cur.l][name]=[]; save(); drawTopics(); document.getElementById('new-topic-in').value=''; } }
 
-function deleteWord(idx) { db.custom[cur.l][cur.t].splice(idx, 1); save(); openEdit(); }
-function addWord() {
-  let q = document.getElementById('w-q').value, a = document.getElementById('w-a').value;
-  if(!q || !a) return; db.custom[cur.l][cur.t].push([q, a]);
-  save(); openEdit(); document.getElementById('w-q').value = ''; document.getElementById('w-a').value = '';
-}
+// ===== EDIT =====
+function openEdit(){ show('edit'); document.getElementById('edit-title').innerText=cur.t; const v=document.getElementById('word-list-view'); v.innerHTML=db.custom[cur.l][cur.t].map((w,i)=>`<div class="word-item"><span>${w[0]} = ${w[1].join(", ")}</span><div><button onclick="toggleFav(${i})">${w[2]?.fav?'⭐':'☆'}</button><button class="del-btn" onclick="deleteWord(${i})">Usuń</button></div></div>`).join(''); }
+function deleteWord(idx){ db.custom[cur.l][cur.t].splice(idx,1); save(); openEdit(); }
+function toggleFav(i){ let w=db.custom[cur.l][cur.t][i]; if(!w[2]) w[2]={fav:false,lvl:1}; w[2].fav=!w[2].fav; save(); openEdit(); }
+function renameTopic(){ let nowa=prompt("Nowa nazwa zestawu:",cur.t); if(!nowa) return; db.custom[cur.l][nowa]=db.custom[cur.l][cur.t]; delete db.custom[cur.l][cur.t]; cur.t=nowa; save(); drawTopics(); }
+function deleteTopic(){ if(!confirm("Na pewno usunąć cały zestaw?")) return; delete db.custom[cur.l][cur.t]; save(); drawTopics(); }
 
-// --- LOGIKA GRY Z POWTÓRKAMI ---
-function startGame() {
-  let all = db.custom[cur.l][cur.t]; if(!all.length) return;
-  let c = parseInt(document.getElementById('game-count').value);
-  cur.w = [...all].sort(() => 0.5 - Math.random()).slice(0, c);
-  cur.round = 1; startRoundLogic();
-}
-
-function startRetryRound() {
-  cur.w = [...cur.errorsToRetry];
-  cur.round++;
-  startRoundLogic();
-}
-
-function startRoundLogic() {
-  cur.idx = 0; cur.ok = 0; cur.errorsToRetry = [];
-  show('game'); nextW();
-}
-
-function nextW() {
-  cur.wait = false; document.getElementById('fb').style.display = 'none';
-  if(cur.idx >= cur.w.length) return fin();
-  document.getElementById('display-word').innerText = cur.w[cur.idx][0];
-  document.getElementById('user-input').value = ''; document.getElementById('user-input').focus();
-}
-
-function handleAction() {
-  if(cur.wait) { cur.idx++; nextW(); return; }
-  let user = document.getElementById('user-input').value.trim().toLowerCase();
-  let correct = cur.w[cur.idx][1].toLowerCase();
-  let f = document.getElementById('fb'); f.style.display = 'block'; cur.wait = true;
-  
-  if(user === correct || (user.length > 3 && correct.includes(user))) {
-    f.innerText = "Dobrze! ✔"; f.style.background = "var(--good)"; cur.ok++;
-  } else {
-    f.innerHTML = `Błąd! Poprawnie: <b>${cur.w[cur.idx][1]}</b>`; f.style.background = "var(--bad)";
-    cur.errorsToRetry.push(cur.w[cur.idx]); // Dodaj do powtórki
-  }
-}
-
-function fin() {
-  show('result');
-  document.getElementById('res-title').innerText = `Wynik Rundy ${cur.round}`;
-  document.getElementById('final-score').innerText = `${cur.ok} / ${cur.w.length}`;
-  
-  const summary = document.getElementById('error-summary');
-  if(cur.errorsToRetry.length > 0) {
-    summary.innerHTML = "<h4>Błędy do poprawy:</h4><table>" + 
-      cur.errorsToRetry.map(e => `<tr><td>${e[0]}</td><td><b>${e[1]}</b></td></tr>`).join('') + "</table>";
-    document.getElementById('retry-btn').classList.remove('hidden');
-    document.getElementById('retry-btn').innerText = `🔄 POWTÓRZ BŁĘDNE (Runda ${cur.round + 1})`;
-  } else {
-    summary.innerHTML = "<p style='color:green; font-weight:bold;'>Perfekcyjnie! Wszystko opanowane! 🏆</p>";
-    document.getElementById('retry-btn').classList.add('hidden');
-  }
-}
-
-function speak() {
-  window.speechSynthesis.speak(new SpeechSynthesisUtterance(cur.w[cur.idx][0]));
-}
-
-function toggleTheme() { document.body.classList.toggle("dark"); db.theme = document.body.classList.contains("dark") ? "dark" : "light"; save(); }
+// ===== GAME =====
+function startGame(){ let all=db.custom[cur.l][cur.t]; if(!all.length) return; let c=parseInt(document.getElementById('game-count').value); cur.w=[...all].sort(()=>0.5-Math.random()).slice(0,c); cur.round=1; startRoundLogic(); }
+function startRetryRound(){ cur.w=[...cur.errorsToRetry]; cur.round++; startRoundLogic(); }
+function startRoundLogic(){ cur.idx=0; cur.ok=0; cur.errorsToRetry=[]; show('game'); nextW(); }
+function nextW(){ cur.wait=false; document.getElementById('fb').style.display='none'; if(cur.idx>=cur.w.length) return fin(); document.getElementById('display-word').innerText=cur.w[cur.idx][0]; document.getElementById('user-input').value=''; document.getElementById('user-input').focus(); }
+function isClose(a,b){ if(a===b) return true; if(a.length>3 && b.includes(a)) return true; let diff=0; for(let i=0;i<Math.max(a.length,b.length);i++){ if(a[i]!==b[i]) diff++; } return diff<=1; }
+function checkAnswer(user, correctList){ user=normalize(user); for(let ans of correctList){ let base=normalize(ans); if(isClose(user,base)) return true; if(synonyms[base]) for(let syn of synonyms[base]) if(isClose(user,normalize(syn))) return true; } return false; }
+function handleAction(){ if(cur.wait){ cur.idx++; nextW(); return; } let user=document.getElementById('user-input').value.trim().toLowerCase(); let correctAnswers=cur.w[cur.idx][1]; let f=document.getElementById('fb'); f.style.display='block'; cur.wait=true; if(checkAnswer(user,correctAnswers)){ f.innerText="Dobrze! ✔"; f.style.background="var(--good)"; cur.ok++; db.stats.ok++; } else{ f.innerHTML=`Błąd! Poprawnie: <b>${correctAnswers.join(", ")}</b>`; f.style.background="var(--bad)"; cur.errorsToRetry.push(cur.w[cur.idx]); db.stats.bad++; } save(); }
+function fin(){ show('result'); document.getElementById('res-title').innerText=`Wynik Rundy ${cur.round}`; document.getElementById('final-score').innerText=`${cur.ok} / ${cur.w.length}`; const summary=document.getElementById('error-summary'); if(cur.errorsToRetry.length>0){ summary.innerHTML="<h4>Błędy do poprawy:</h4><table>"+cur.errorsToRetry.map(e=>`<tr><td>${e[0]}</td><td><b>${e[1].join(", ")}</b></td></tr>`).join('')+"</table>"; document.getElementById('retry-btn').classList.remove('hidden'); document.getElementById('retry-btn').innerText=`🔄 POWTÓRZ BŁĘDNE (Runda ${cur.round+1})`; } else{ summary.innerHTML="<p style='color:green;font-weight:bold;'>Perfekcyjnie! Wszystko opanowane! 🏆</p>"; document.getElementById('retry-btn').classList.add('hidden'); } db.stats.rounds++; save(); }
+function speak(){ window.speechSynthesis.speak(new SpeechSynthesisUtterance(cur.w[cur.idx][0])); }
+function toggleTheme(){ document.body.classList.toggle("dark"); db.theme=document.body.classList.contains("dark")?"dark":"light"; save(); }
+function showStats(){ alert(`Poprawne: ${db.stats.ok}\nBłędne: ${db.stats.bad}\nRundy: ${db.stats.rounds}`); }
+function showInfo(){ alert("Tutaj możesz dodać najważniejsze zasady lub informacje dla użytkownika."); }
 drawLobby();
 </script>
 </body>
