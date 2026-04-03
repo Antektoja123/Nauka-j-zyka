@@ -3,196 +3,247 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fiszki Expert - Offline</title>
+<title>Fiszki PRO - Projekt Finalny</title>
 <style>
-:root { --bg: #f0f4ff; --card: #ffffff; --text: #111; --primary: #4a6cf7; --good: #d4edda; --warn: #fff3cd; --bad: #f8d7da; }
-.dark { --bg: #1e1e1e; --card: #2c2c2c; --text: #f0f0f0; --primary: #5a7cf7; --good: #155724; --warn: #856404; --bad: #721c24; }
+:root { --bg: #f4f7fe; --card: #ffffff; --text: #2d3436; --primary: #0984e3; --good: #55efc4; --warn: #ffeaa7; --bad: #ff7675; }
+.dark { --bg: #2d3436; --card: #353b48; --text: #f5f6fa; --primary: #74b9ff; --good: #00b894; --warn: #fdcb6e; --bad: #d63031; }
 body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; }
-.app { width: 100%; max-width: 600px; min-height: 100vh; background: var(--card); border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-.header { background: var(--primary); color: white; padding: 15px; text-align: center; display: flex; justify-content: space-between; align-items: center; border-radius: 20px 20px 0 0; }
+.app { width: 100%; max-width: 650px; min-height: 100vh; background: var(--card); border-radius: 0 0 20px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.header { background: var(--primary); color: white; padding: 20px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
 .content { padding: 20px; }
-button { width: 100%; padding: 14px; margin: 5px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+button { width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 15px; }
 .blue { background: var(--primary); color:white; }
-.gray { background: #6c757d; color:white; }
-input, select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ccc; margin: 5px 0; }
+.gray { background: #b2bec3; color:white; }
+input, select { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #dfe6e9; margin: 8px 0; font-size: 16px; box-sizing: border-box; }
 .hidden { display: none; }
-.word { font-size: 28px; font-weight: bold; margin: 20px 0; text-align: center; }
-.fb { padding: 12px; border-radius: 10px; margin: 10px 0; display: none; text-align: center; font-weight: bold; }
-table { width:100%; border-collapse: collapse; font-size: 14px; }
-td, th { border:1px solid #ccc; padding:8px; }
+.word-display { font-size: 36px; font-weight: 900; margin: 30px 0; text-align: center; color: var(--primary); }
+.fb-box { padding: 15px; border-radius: 12px; margin: 15px 0; display: none; text-align: center; font-weight: bold; }
+.scroll-area { max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; margin: 10px 0; font-size: 14px; }
+table { width:100%; border-collapse: collapse; margin-top: 10px; }
+td, th { border:1px solid #ddd; padding:10px; text-align: left; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div id="hTitle">🏠 Lobby</div>
-    <button onclick="toggleTheme()" style="width:auto;">🌙/☀</button>
+    <div id="nav-title">🏠 Lobby</div>
+    <button onclick="toggleTheme()" style="width:auto; padding: 5px 15px;">🌙/☀</button>
   </div>
+
   <div class="content">
     <!-- LOBBY -->
     <div id="lobby">
-      <h3>Wybierz dziedzinę:</h3>
-      <div id="lBtns"></div>
-      <button onclick="addLang()" class="gray">+ Dodaj własny przedmiot</button>
+      <h3>Wybierz dziedzinę nauki:</h3>
+      <div id="lang-list"></div>
+      <button onclick="addNewLang()" class="gray">+ Dodaj nowy przedmiot</button>
     </div>
-    <!-- MENU -->
+
+    <!-- MENU JĘZYKA -->
     <div id="menu" class="hidden">
-      <button class="gray" onclick="show('lobby')">⬅ Powrót do Lobby</button>
-      <h2 id="mTitle"></h2>
-      <button class="blue" onclick="drawTopics()">📚 Moje Zestawy</button>
-      <button style="background:#ffc107;" onclick="showImp()">❗ Ważne Info</button>
+      <button class="gray" onclick="show('lobby')">⬅ Lobby</button>
+      <h2 id="menu-lang"></h2>
+      <button class="blue" onclick="drawTopics()">📚 Wybierz Zestaw / Fiszki</button>
+      <button style="background:#fdcb6e; color:#2d3436;" onclick="showImportant()">❗ Ważne Informacje (Wiki)</button>
     </div>
-    <!-- TOPICS -->
+
+    <!-- LISTA TEMATÓW -->
     <div id="topics" class="hidden">
       <button class="gray" onclick="show('menu')">⬅ Menu</button>
-      <div id="tList"></div>
+      <div id="topics-render"></div>
       <hr>
-      <input id="nTopic" placeholder="Nazwa nowego zestawu">
-      <button class="blue" onclick="addTopic()">➕ Stwórz zestaw</button>
+      <input id="new-topic-in" placeholder="Np. Kolory, Azja, Potęgi...">
+      <button class="blue" onclick="createTopic()">➕ Stwórz nowy zestaw</button>
     </div>
-    <!-- EDIT -->
+
+    <!-- EDYCJA I GRA -->
     <div id="edit" class="hidden">
-      <button class="gray" onclick="drawTopics()">⬅ Zestawy</button>
-      <h3 id="eTitle"></h3>
-      <div style="background:#eee; padding:10px; border-radius:15px; margin-bottom:15px;">
-        <select id="wCount"><option value="5">5 słów</option><option value="10" selected>10 słów</option><option value="999">Wszystkie</option></select>
-        <button class="blue" onclick="startG()">▶ START</button>
+      <button class="gray" onclick="drawTopics()">⬅ Powrót do tematów</button>
+      <h3 id="edit-topic-title"></h3>
+      <div style="background:#ecf0f1; padding:15px; border-radius:15px; margin-bottom:15px;">
+        <label>Liczba słów w rundzie:</label>
+        <select id="game-count">
+          <option value="10">10 słów</option>
+          <option value="25">25 słów</option>
+          <option value="999">Wszystkie</option>
+        </select>
+        <button class="blue" onclick="startGame()">▶ ROZPOCZNIJ NAUKĘ</button>
       </div>
-      <h4>Dodaj nowe słowo:</h4>
-      <input id="w1" placeholder="Pytanie (np. Apple)">
-      <input id="w2" placeholder="Odpowiedź (np. Jabłko)">
-      <button class="blue" onclick="addW()">➕ Dodaj do listy</button>
-      <div id="wView" style="max-height:100px; overflow-y:auto; font-size:12px; margin-top:10px;"></div>
+      <h4>Zarządzaj słowami:</h4>
+      <input id="w-q" placeholder="Pytanie / Kraj / Słowo">
+      <input id="w-a" placeholder="Odpowiedź / Stolica / Tłumaczenie">
+      <div style="display:flex; gap:5px;">
+        <button onclick="autoFill()" class="gray" style="font-size:12px;">🔍 Szukaj odp.</button>
+        <button onclick="addWord()" class="blue">➕ Dodaj</button>
+      </div>
+      <div id="word-list-view" class="scroll-area"></div>
     </div>
-    <!-- GAME -->
+
+    <!-- GRA -->
     <div id="game" class="hidden">
-      <div id="fb" class="fb"></div>
-      <div id="word" class="word"></div>
-      <input id="ans" placeholder="Wpisz odpowiedź..." autocomplete="off">
-      <button id="gBtn" class="blue" onclick="gAction()">SPRAWDŹ</button>
+      <div id="fb" class="fb-box"></div>
+      <div id="display-word" class="word-display"></div>
+      <input id="user-input" placeholder="Wpisz odpowiedź..." autocomplete="off">
+      <button id="check-btn" class="blue" onclick="handleGameAction()">SPRAWDŹ</button>
     </div>
-    <!-- RESULT -->
+
+    <!-- WYNIKI -->
     <div id="result" class="hidden">
-      <h2 id="resT"></h2>
-      <div id="errL"></div>
-      <button class="blue" onclick="show('menu')">OK</button>
+      <h2 id="final-score"></h2>
+      <div id="error-summary"></div>
+      <button class="blue" onclick="show('menu')">GOTOWE</button>
     </div>
-    <!-- IMPORTANT -->
-    <div id="imp" class="hidden">
-      <button class="gray" onclick="show('menu')">⬅ Powrót</button>
-      <div id="impC" style="margin-top:15px;"></div>
+
+    <!-- WAŻNE -->
+    <div id="important" class="hidden">
+      <button class="gray" onclick="show('menu')">⬅ Menu</button>
+      <div id="wiki-content" style="margin-top:20px;"></div>
     </div>
   </div>
 </div>
 
 <script>
-const initialData = {
+// --- ROZBUDOWANA BAZA DANYCH ---
+const baseData = {
   "Angielski": {
-    "🍎 Owoce": [["Apple","Jabłko"],["Pear","Gruszka"],["Plum","Śliwka"]],
-    "🎨 Kolory": [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"]],
-    "🔢 Liczby": [["One","Jeden"],["Two","Dwa"],["Three","Trzy"]]
-  },
-  "Hiszpański": {
-    "🍎 Owoce": [["Manzana","Jabłko"],["Uva","Winogrono"]],
-    "💬 Podstawy": [["Hola","Cześć"],["Gracias","Dziękuję"]]
-  },
-  "Matematyka": {
-    "⚡ Potęgi": [["2^2","4"],["3^2","9"],["5^2","25"]],
-    "√ Pierwiastki": [["√16","4"],["√81","9"]]
+    "🍎 Owoce i Warzywa": [["Apple","Jabłko"],["Pear","Gruszka"],["Plum","Śliwka"],["Grape","Winogrono"],["Watermelon","Arbuz"],["Tomato","Pomidor"],["Potato","Ziemniak"],["Onion","Cebula"],["Garlic","Czosnek"],["Carrot","Marchewka"]],
+    "🎨 Kolory": [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"],["Yellow","Żółty"],["Black","Czarny"],["White","Biały"],["Purple","Fioletowy"],["Orange","Pomarańczowy"]],
+    "🔢 Liczby 1-20": [["One","Jeden"],["Two","Dwa"],["Three","Trzy"],["Ten","Dziesięć"],["Eleven","Jedenaście"],["Twelve","Dwanaście"],["Twenty","Dwadzieścia"]],
+    "💬 Podstawy": [["Hello","Cześć"],["Thank you","Dziękuję"],["Please","Proszę"],["Goodbye","Do widzenia"],["Sorry","Przepraszam"]]
   },
   "Geografia": {
-    "🌍 Stolice Europy": [["Polska","Warszawa"],["Niemcy","Berlin"],["Francja","Paryż"],["Włochy","Rzym"]],
-    "🏔 Szczyty": [["Mount Everest","Himalaje"],["Rysy","Tatry"]]
+    "🌍 Europa": [["Polska","Warszawa"],["Niemcy","Berlin"],["Francja","Paryż"],["Włochy","Rzym"],["Hiszpania","Madryt"],["Grecja","Ateny"],["Portugalia","Lizbona"]],
+    "🌏 Azja": [["Chiny","Pekin"],["Japonia","Tokio"],["Indie","New Delhi"],["Korea Południowa","Seul"],["Tajlandia","Bangkok"]],
+    "🏔 Góry": [["Mount Everest","Himalaje"],["K2","Karakorum"],["Mont Blanc","Alpy"],["Rysy","Tatry"],["Aconcagua","Andy"]]
+  },
+  "Matematyka": {
+    "⚡ Potęgi": [["2^2","4"],["2^3","8"],["3^2","9"],["4^2","16"],["5^2","25"],["10^2","100"]],
+    "√ Pierwiastki": [["√4","2"],["√9","3"],["√16","4"],["√25","5"],["√100","10"]]
   }
 };
 
-let st = JSON.parse(localStorage.getItem("fiszki_v4")) || { custom: initialData, langs: Object.keys(initialData), kn: {}, theme: "light" };
-let cur = { l: "", t: "", w: [], i: 0, ok: 0, err: [], wait: false };
+let db = JSON.parse(localStorage.getItem("fiszki_expert_v5")) || { custom: baseData, langs: Object.keys(baseData), knowledge: {}, theme: "light" };
+let state = { lang: "", topic: "", words: [], idx: 0, ok: 0, errs: [], waiting: false };
 
-function save() { localStorage.setItem("fiszki_v4", JSON.stringify(st)); }
-function show(id) { document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function save() { localStorage.setItem("fiszki_expert_v5", JSON.stringify(db)); }
+function show(id) { 
+  document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden')); 
+  document.getElementById(id).classList.remove('hidden'); 
+  document.getElementById('nav-title').innerText = id === 'lobby' ? "🏠 Lobby" : "📖 " + state.lang;
+}
 
 function drawLobby() {
-  const d = document.getElementById('lBtns'); d.innerHTML = '';
-  st.langs.forEach(l => {
+  const list = document.getElementById('lang-list'); list.innerHTML = '';
+  db.langs.forEach(l => {
     let b = document.createElement('button'); b.className = 'blue'; b.innerText = l;
-    b.onclick = () => { cur.l = l; document.getElementById('mTitle').innerText = l; show('menu'); };
-    d.appendChild(b);
+    b.onclick = () => { state.lang = l; document.getElementById('menu-lang').innerText = l; show('menu'); };
+    list.appendChild(b);
   });
 }
-
-function addLang() { let n = prompt("Podaj nazwę przedmiotu:"); if(n) { st.langs.push(n); st.custom[n] = {}; save(); drawLobby(); } }
 
 function drawTopics() {
-  show('topics'); const d = document.getElementById('tList'); d.innerHTML = '';
-  Object.keys(st.custom[cur.l] || {}).forEach(t => {
-    let b = document.createElement('button'); b.innerText = `${t} (${st.custom[cur.l][t].length})`;
-    b.onclick = () => { cur.t = t; drawEdit(); }; d.appendChild(b);
+  show('topics'); const list = document.getElementById('topics-render'); list.innerHTML = '';
+  if(!db.custom[state.lang]) db.custom[state.lang] = {};
+  Object.keys(db.custom[state.lang]).forEach(t => {
+    let b = document.createElement('button'); b.innerText = `${t} (${db.custom[state.lang][t].length})`;
+    b.onclick = () => { state.topic = t; openEdit(); }; list.appendChild(b);
   });
 }
 
-function addTopic() {
-  let n = document.getElementById('nTopic').value; if(!n) return;
-  if(!st.custom[cur.l]) st.custom[cur.l] = {}; st.custom[cur.l][n] = [];
-  save(); drawTopics(); document.getElementById('nTopic').value = '';
+function openEdit() {
+  show('edit'); document.getElementById('edit-topic-title').innerText = state.topic;
+  renderWordList();
 }
 
-function drawEdit() {
-  show('edit'); document.getElementById('eTitle').innerText = cur.t;
-  const v = document.getElementById('wView');
-  v.innerHTML = st.custom[cur.l][cur.t].map(x => `• ${x[0]} = ${x[1]}`).join('<br>');
+function renderWordList() {
+  const v = document.getElementById('word-list-view');
+  const items = db.custom[state.lang][state.topic];
+  v.innerHTML = items.length ? items.map(w => `<div>• <b>${w[0]}</b> = ${w[1]}</div>`).join('') : "Brak słówek. Dodaj pierwsze!";
 }
 
-function addW() {
-  let v1 = document.getElementById('w1').value, v2 = document.getElementById('w2').value;
-  if(!v1 || !v2) return; st.custom[cur.l][cur.t].push([v1, v2]);
-  save(); drawEdit(); document.getElementById('w1').value = ''; document.getElementById('w2').value = '';
+function addWord() {
+  let q = document.getElementById('w-q').value, a = document.getElementById('w-a').value;
+  if(!q || !a) return; db.custom[state.lang][state.topic].push([q, a]);
+  save(); renderWordList(); document.getElementById('w-q').value = ''; document.getElementById('w-a').value = '';
 }
 
-function startG() {
-  let all = st.custom[cur.l][cur.t]; if(!all || all.length === 0) return;
-  let n = parseInt(document.getElementById('wCount').value);
-  cur.w = [...all].sort(() => 0.5 - Math.random()).slice(0, n);
-  cur.i = 0; cur.ok = 0; cur.err = []; show('game'); nextW();
+// --- AUTOMATYCZNE PODPOWIEDZI (ONLINE/LOCAL) ---
+async function autoFill() {
+  let q = document.getElementById('w-q').value; if(!q) return;
+  document.getElementById('w-a').placeholder = "Szukam...";
+  try {
+    let res = await fetch(`https://translated.net{encodeURIComponent(q)}&langpair=pl|en`);
+    let data = await res.json();
+    document.getElementById('w-a').value = data.responseData.translatedText;
+  } catch(e) { alert("Błąd połączenia. Wpisz ręcznie."); }
 }
 
-function nextW() {
-  cur.wait = false; document.getElementById('fb').style.display='none'; document.getElementById('gBtn').innerText="SPRAWDŹ";
-  if(cur.i >= cur.w.length) return fin();
-  document.getElementById('word').innerText = cur.w[cur.i][0];
-  document.getElementById('ans').value = ''; document.getElementById('ans').focus();
+// --- INTELIGENTNA TOLERANCJA (Levenshtein) ---
+function getLev(s1, s2) {
+  s1 = s1.toLowerCase().trim(); s2 = s2.toLowerCase().trim();
+  if(s1 === s2) return 0;
+  if(s1.includes(s2) || s2.includes(s1)) return 1; // Tolerancja dla "dzięki" vs "dziękuję"
+  let costs = []; for(let i=0; i<=s1.length; i++){let last=i; for(let j=0; j<=s2.length; j++){if(i==0)costs[j]=j; else if(j>0){let nv=costs[j-1]; if(s1[i-1]!=s2[j-1]) nv=Math.min(Math.min(nv,last),costs[j])+1; costs[j-1]=last; last=nv;}} if(i>0)costs[s2.length]=last;}
+  return costs[s2.length];
 }
 
-function gAction() {
-  if(cur.wait) { cur.i++; nextW(); return; }
-  let u = document.getElementById('ans').value.trim().toLowerCase();
-  let r = cur.w[cur.i][1].toLowerCase();
-  let f = document.getElementById('fb'); f.style.display='block'; cur.wait = true;
-  document.getElementById('gBtn').innerText="DALEJ";
-  
-  if(u === r) { f.innerText="Super! ✔"; f.style.background="var(--good)"; cur.ok++; }
-  else if (lev(u, r) <= 1) { f.innerText=`Literówka! Poprawnie: ${cur.w[cur.i][1]}`; f.style.background="var(--warn)"; cur.ok++; }
-  else { f.innerText=`Błąd! Poprawnie: ${cur.w[cur.i][1]}`; f.style.background="var(--bad)"; cur.err.push(`${cur.w[cur.i][0]} -> ${cur.w[cur.i][1]}`); }
+function startGame() {
+  let all = db.custom[state.lang][state.topic]; if(!all.length) return;
+  let count = parseInt(document.getElementById('game-count').value);
+  state.words = [...all].sort(() => 0.5 - Math.random()).slice(0, count);
+  state.idx = 0; state.ok = 0; state.errs = []; show('game'); nextWord();
 }
 
-function fin() {
-  show('result'); document.getElementById('resT').innerText = `Wynik: ${cur.ok}/${cur.w.length}`;
-  document.getElementById('errL').innerHTML = cur.err.length ? "<b>Do powtórki:</b><br>" + cur.err.join('<br>') : "Perfekcyjnie! ✨";
+function nextWord() {
+  state.waiting = false; document.getElementById('fb').style.display = 'none';
+  document.getElementById('check-btn').innerText = "SPRAWDŹ";
+  if(state.idx >= state.words.length) return showResult();
+  document.getElementById('display-word').innerText = state.words[state.idx][0];
+  document.getElementById('user-input').value = ''; document.getElementById('user-input').focus();
 }
 
-function lev(s1, s2) {
-  let costs = []; for(let i=0; i<=s1.length; i++) { let last=i; for(let j=0; j<=s2.length; j++) { if(i==0) costs[j]=j; else if(j>0) { let newV=costs[j-1]; if(s1[i-1]!=s2[j-1]) newV=Math.min(Math.min(newV,last),costs[j])+1; costs[j-1]=last; last=newV; } } if(i>0) costs[s2.length]=last; } return costs[s2.length];
+function handleGameAction() {
+  if(state.waiting) { state.idx++; nextWord(); return; }
+  let user = document.getElementById('user-input').value;
+  let correct = state.words[state.idx][1];
+  let dist = getLev(user, correct);
+  let fb = document.getElementById('fb'); fb.style.display = 'block'; state.waiting = true;
+  document.getElementById('check-btn').innerText = "DALEJ";
+
+  if(dist <= 2) { // Tolerancja błędów i literówek
+    fb.innerHTML = dist === 0 ? "Idealnie! ✔" : `Prawie dobrze! Chodziło o: <b>${correct}</b>`;
+    fb.style.background = dist === 0 ? "var(--good)" : "var(--warn)"; state.ok++;
+  } else {
+    fb.innerHTML = `Błąd! Poprawnie: <b>${correct}</b>`; fb.style.background = "var(--bad)";
+    state.errs.push(`${state.words[state.idx][0]} -> ${correct}`);
+  }
 }
 
-function showImp() {
-  show('imp'); let c = document.getElementById('impC');
-  if(cur.l === "Geografia") c.innerHTML = "<table><tr><th>Kraj</th><th>Stolica</th></tr><tr><td>Niemcy</td><td>Berlin</td></tr><tr><td>Hiszpania</td><td>Madryt</td></tr></table>";
-  else if(cur.l === "Matematyka") c.innerHTML = "<b>Wzór na potęgi:</b> a^n = a * a * ... (n razy)<br><b>Pierwiastki:</b> √81 = 9, bo 9*9=81";
-  else c.innerHTML = "Pobierz zasady online lub dodaj własne notatki w kodzie.";
+function showResult() {
+  show('result'); document.getElementById('final-score').innerText = `Wynik: ${state.ok} / ${state.words.length}`;
+  document.getElementById('error-summary').innerHTML = state.errs.length ? "<b>Powtórz:</b><br>" + state.errs.join('<br>') : "Perfekcyjnie! 🏆";
 }
 
-function toggleTheme() { document.body.classList.toggle("dark"); st.theme = document.body.classList.contains("dark") ? "dark" : "light"; save(); }
-if(st.theme === "dark") document.body.classList.add("dark");
+async function showImportant() {
+  show('important'); const c = document.getElementById('wiki-content');
+  if(db.knowledge[state.lang]) {
+    c.innerHTML = `<div class="scroll-area"><h3>Zasady: ${state.lang}</h3>${db.knowledge[state.lang]}</div><button onclick="deleteWiki()" class="gray">Usuń i pobierz ponownie</button>`;
+  } else {
+    c.innerHTML = `<p>Brak zapisanych danych. Pobierz teraz, aby działały offline!</p><button class="blue" onclick="fetchWiki()">🌐 POBIERZ Z SIECI</button>`;
+  }
+}
+
+async function fetchWiki() {
+  const c = document.getElementById('wiki-content'); c.innerHTML = "🔄 Pobieranie danych...";
+  try {
+    let q = state.lang === "Geografia" ? "Geografia" : `Gramatyka_języka_${state.lang.toLowerCase()}`;
+    let res = await fetch(`https://wikipedia.org{encodeURIComponent(q)}`);
+    let data = await res.json();
+    db.knowledge[state.lang] = data.extract || "Brak szczegółowego opisu."; save(); showImportant();
+  } catch(e) { alert("Brak internetu!"); showImportant(); }
+}
+
+function toggleTheme() { document.body.classList.toggle("dark"); db.theme = document.body.classList.contains("dark") ? "dark" : "light"; save(); }
+if(db.theme === "dark") document.body.classList.add("dark");
 drawLobby();
 </script>
 </body>
