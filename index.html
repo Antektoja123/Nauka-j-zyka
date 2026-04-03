@@ -1,235 +1,173 @@
-<!DOCTYPE html>
-<html lang="pl">
+<!DOCTYPE html><html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Learner Pro</title>
-    <style>
-        :root { --primary: #007bff; --secondary: #28a745; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .app-container { background: white; width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; min-height: 95vh; display: flex; flex-direction: column; }
-        .header { background: var(--primary); color: white; padding: 15px; text-align: center; }
-        .xp-bar-container { background: #e9ecef; height: 12px; width: 100%; }
-        #xp-progress { background: #ffc107; height: 100%; width: 0%; transition: width 0.5s; }
-        .content { padding: 20px; flex-grow: 1; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 15px 10px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 8px; }
-        .btn-blue { background: var(--primary); color: white; width: 100%; }
-        .btn-green { background: var(--secondary); color: white; width: 100%; }
-        .btn-orange { background: #fd7e14; color: white; width: 100%; }
-        input { width: 100%; padding: 15px; box-sizing: border-box; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; margin: 20px 0; outline: none; }
-        .hidden { display: none; }
-        .stats-row { display: flex; justify-content: space-around; background: #f8f9fa; padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; }
-        .grammar-note { background: #fff3cd; border-left: 5px solid #ffc107; padding: 12px; margin-bottom: 15px; font-size: 14px; text-align: left; border-radius: 0 10px 10px 0; }
-        .result-item { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 15px; }
-        .error { color: #dc3545; font-weight: bold; } 
-        .correct { color: #28a745; font-weight: bold; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nauka słówek i innych dziedzin</title>
+<style>
+:root {--bg:#f5f7fb;--card:#ffffff;--text:#000;--primary:#4a6cf7;--good:#d4edda;--bad:#f8d7da;}
+.dark {--bg:#1e1e1e;--card:#2c2c2c;--text:#fff;}
+body {font-family: Arial;background: var(--bg);color: var(--text);margin:0;display:flex;justify-content:center;}
+.app {width:100%;max-width:500px;background:var(--card);min-height:100vh;border-radius:20px;}
+.header {background:var(--primary);color:white;padding:15px;text-align:center;}
+.content { padding:20px; text-align:center; }
+button {width:100%;padding:15px;margin:5px 0;border:none;border-radius:12px;font-weight:bold;cursor:pointer;}
+.blue { background:var(--primary); color:white; }
+.red { background:#dc3545; color:white; }
+input {width:100%;padding:15px;font-size:18px;border-radius:12px;border:2px solid #ccc;margin:10px 0;}
+.word { font-size:30px; margin:20px 0; }
+.feedback {padding:15px;border-radius:12px;margin:10px 0;display:none;}
+.hidden { display:none; }
+.important-content {text-align:left; padding:10px; background:#f0f0f0; border-radius:12px; margin:10px 0; max-height:400px; overflow-y:auto;}
+table {width:100%; border-collapse:collapse; margin:10px 0;}
+td, th {border:1px solid #ccc; padding:5px; text-align:left;}
+th {background:#e0e0e0;}
+</style>
 </head>
-<body>
-
-<div class="app-container">
-    <div class="header">
-        <h2 style="margin:0">🚀 Super Learner Pro</h2>
-        <div id="level-display">Poziom 1 (0/100 XP)</div>
-    </div>
-    <div class="xp-bar-container"><div id="xp-progress"></div></div>
-
-    <div class="stats-row">
-        <span id="stat-lang">Język: -</span>
-        <span id="stat-points">Punkty: 0</span>
-        <span id="stat-bonus">Bonus: x1</span>
-    </div>
-
-    <div class="content">
-        <div id="view-main">
-            <h3>Wybierz Język Nauki:</h3>
-            <div class="menu-grid">
-                <button class="btn-blue" onclick="selectLang('angielski')">🇬🇧 Angielski</button>
-                <button class="btn-orange" onclick="selectLang('hiszpański')">🇪🇸 Hiszpański</button>
-            </div>
-            <button onclick="resetGame()" style="margin-top:20px; background:#eee; color:#666; font-size:10px;">ZRESETUJ WSZYSTKO</button>
-        </div>
-
-        <div id="view-topics" class="hidden">
-            <button onclick="showView('view-main')" style="background:none; color:var(--primary); font-size: 16px;">⬅ Zmień język</button>
-            <h3 id="topic-title">Wybierz temat:</h3>
-            <div id="grammar-info" class="grammar-note hidden"></div>
-            <div class="menu-grid" id="topics-buttons"></div>
-            <hr>
-            <h4>Sklep</h4>
-            <button class="btn-green" id="btn-upgrade" onclick="buyUpgrade()">Kup Bonus</button>
-        </div>
-
-        <div id="view-game" class="hidden">
-            <p id="word-display" style="font-size:32px; font-weight:bold; color: #333; margin-top: 0;"></p>
-            <input type="text" id="answer-input" placeholder="Wpisz po polsku..." autocomplete="off">
-            <button class="btn-blue" onclick="checkAnswer()" style="font-size: 18px; padding: 18px;">SPRAWDŹ</button>
-        </div>
-
-        <div id="view-results" class="hidden">
-            <h2 id="congrats-msg">Świetnie!</h2>
-            <div id="error-list"></div>
-            <br>
-            <button class="btn-blue" onclick="showView('view-topics')">Wróć do tematów</button>
-        </div>
-    </div>
-</div>
-
-<script>
-const baza = {
-    "angielski": {
-        "grammar": "<b>Wskazówka:</b> W angielskim używamy <i>a/an</i> przed rzeczownikami. <i>The</i> używamy dla konkretów.",
-        "tematy": {
-            "Owoce": {"apple": "jabłko", "banana": "banan", "pear": "gruszka", "strawberry": "truskawka", "raspberry": "malina"},
-            "Zwierzęta": {"dog": "pies", "cat": "kot", "lion": "lew", "elephant": "słoń", "mouse": "mysz"},
-            "Dom": {"window": "okno", "door": "drzwi", "bed": "łóżko", "kitchen": "kuchnia", "table": "stół"}
-        }
-    },
-    "hiszpański": {
-        "grammar": "<b>Wskazówka:</b> Rodzajniki: <i>el</i> (męski), <i>la</i> (żeński). Liczba mnoga: <i>los</i> i <i>las</i>.",
-        "tematy": {
-            "Owoce": {"manzana": "jabłko", "uva": "winogrono", "platano": "banan", "cereza": "wiśnia", "limon": "cytryna"},
-            "Rodzina": {"padre": "ojciec", "madre": "matka", "hermano": "brat", "abuela": "babcia", "hijo": "syn"},
-            "Kolory": {"rojo": "czerwony", "azul": "niebieski", "verde": "zielony", "negro": "czarny", "blanco": "biały"}
-        }
-    }
+<body><div class="app">
+<div class="header">
+<h2>📚 Nauka słówek i innych dziedzin</h2>
+<div id="mode">Tryb: TEST</div>
+<button onclick="toggleTheme()">🌙 / ☀</button>
+<button onclick="shareApp()">📤 Udostępnij</button>
+</div><div class="content">
+<div id="main">
+<div id="languageButtons"></div>
+<button onclick="showCustom()">➕ Moje fiszki</button>
+<button class="blue" onclick="showImportant()">❗ Ważne</button>
+</div><div id="topics" class="hidden">
+<button onclick="show('main')">⬅</button>
+<div id="topicsList"></div>
+</div><div id="custom" class="hidden">
+<button onclick="show('main')">⬅</button>
+<h3>Twoje zestawy</h3>
+<div id="customList"></div>
+<input id="newTopic" placeholder="Nazwa zestawu">
+<button onclick="addTopic()">➕ Dodaj zestaw</button>
+</div><div id="edit" class="hidden">
+<button onclick="showCustom()">⬅</button>
+<h3 id="editTitle"></h3>
+<div id="wordsList"></div>
+<input id="w1" placeholder="Słowo / Pytanie">
+<input id="w2" placeholder="Tłumaczenie / Odpowiedź">
+<button onclick="addWord()">➕ Dodaj słowo</button>
+<button class="blue" onclick="startCustomGame()">▶ Start</button>
+<button onclick="translateWord()">🌍 Tłumacz</button>
+</div><div id="important" class="hidden">
+<button onclick="show('main')">⬅</button>
+<h3>❗ Ważne</h3>
+<div class="important-content" id="importantList"></div>
+</div><div id="game" class="hidden">
+<div id="feedback" class="feedback"></div>
+<div id="word" class="word"></div>
+<input id="input" placeholder="Wpisz odpowiedź...">
+<button onclick="action()" class="blue" id="btn">SPRAWDŹ</button>
+</div></div>
+</div><script>
+let state = JSON.parse(localStorage.getItem("save")) || {
+  custom:{},
+  stats:{},
+  theme:"light",
+  languages:['angielski','hiszpański','matematyka','geografia']
 };
 
-// --- LOGIKA ZAPISU ---
-let defaultState = {
-    points: { "angielski": 0, "hiszpański": 0 },
-    bonus: { "angielski": 1, "hiszpański": 1 },
-    xp: 0, level: 1
-};
+let s = {words:[], index:0, wait:false};
+let currentTopic="";
+let currentLang="";
+let correct=0;
 
-// Ładowanie z pamięci telefonu
-let saved = localStorage.getItem('superLearnerSave');
-let state = saved ? JSON.parse(saved) : defaultState;
+if(state.theme==="dark") document.body.classList.add("dark");
+function toggleTheme(){document.body.classList.toggle("dark");state.theme=document.body.classList.contains("dark")?"dark":"light";save();}
 
-// Dodatkowe zmienne sesji (niezapisywane)
-let currentSession = { lang: "", topic: "", words: [], index: 0, errors: [] };
+function show(v){["main","topics","game","custom","edit","important"].forEach(x=>document.getElementById(x).classList.add("hidden"));document.getElementById(v).classList.remove("hidden");}
+function showImportant(){show("important"); drawImportant();}
 
-function saveGame() {
-    localStorage.setItem('superLearnerSave', JSON.stringify(state));
+/* WYBÓR JĘZYKA */
+function drawLanguages(){
+ let div = document.getElementById('languageButtons');
+ div.innerHTML='';
+ state.languages.forEach(lang=>{
+   let b=document.createElement('button');
+   b.className='blue';
+   b.innerText=lang;
+   b.onclick=()=>start(lang);
+   div.appendChild(b);
+ });
+ let addBtn=document.createElement('button');
+ addBtn.innerText='+ Dodaj język';
+ addBtn.onclick=addLanguage;
+ div.appendChild(addBtn);
 }
 
-function resetGame() {
-    if(confirm("Czy na pewno chcesz usunąć wszystkie punkty i poziomy?")) {
-        localStorage.removeItem('superLearnerSave');
-        location.reload();
-    }
-}
-// ----------------------
-
-function showView(viewId) {
-    ["view-main", "view-topics", "view-game", "view-results"].forEach(id => document.getElementById(id).classList.add('hidden'));
-    document.getElementById(viewId).classList.remove('hidden');
-    updateUI();
+function addLanguage(){
+ let newLang=prompt('Podaj nazwę nowego języka / dziedziny:');
+ if(newLang && !state.languages.includes(newLang)){
+   state.languages.push(newLang);
+   state.custom[newLang]={};
+   state.stats[newLang]={};
+   save();
+   drawLanguages();
+ }
 }
 
-function selectLang(l) {
-    currentSession.lang = l;
-    document.getElementById("stat-lang").innerText = `Język: ${l.toUpperCase()}`;
-    const gInfo = document.getElementById("grammar-info");
-    gInfo.innerHTML = baza[l].grammar;
-    gInfo.classList.remove("hidden");
+/* CUSTOM */
+function showCustom(){show("custom");drawCustom();}
+function drawCustom(){let div=document.getElementById("customList");div.innerHTML="";
+ Object.keys(state.custom).forEach(lang=>{
+ Object.keys(state.custom[lang]).forEach(t=>{
+   let wrap=document.createElement("div");
+   let b=document.createElement("button"); b.innerText=`[${lang}] ${t}`; b.onclick=()=>editTopic(lang,t);
+   let del=document.createElement("button"); del.innerText="❌"; del.onclick=()=>deleteTopic(lang,t);
+   wrap.appendChild(b); wrap.appendChild(del); div.appendChild(wrap);
+ });
+});
+}
+function addTopic(){let lang=prompt('Dla którego języka / dziedziny?'); let name=document.getElementById("newTopic").value; if(!lang||!name) return; if(!state.custom[lang]) state.custom[lang]={}; state.custom[lang][name]=[]; save(); drawCustom();}
+function deleteTopic(lang,t){if(confirm("Usunąć zestaw?")){delete state.custom[lang][t]; save(); drawCustom();}}
+function editTopic(lang,t){currentTopic=t; currentLang=lang; show("edit"); document.getElementById("editTitle").innerText=`[${lang}] ${t}`; drawWords();}
 
-    const container = document.getElementById("topics-buttons");
-    container.innerHTML = "";
-    Object.keys(baza[l].tematy).forEach(t => {
-        let btn = document.createElement("button");
-        btn.className = "btn-blue";
-        btn.innerText = t;
-        btn.onclick = () => startTopic(t);
-        container.appendChild(btn);
-    });
-    showView('view-topics');
+/* GAME */
+function startCustomGame(){s.words=state.custom[currentLang][currentTopic]; s.index=0; correct=0; show("game"); next();}
+function next(){s.wait=false; document.getElementById("btn").innerText="SPRAWDŹ"; document.getElementById("feedback").style.display="none"; if(s.index>=s.words.length){
+   if(!state.stats[currentLang]) state.stats[currentLang]={};
+   if(!state.stats[currentLang][currentTopic]) state.stats[currentLang][currentTopic]=[];
+   state.stats[currentLang][currentTopic].push(Math.round(correct/s.words.length*100));
+   save();
+   alert(`Wynik: ${correct}/${s.words.length}`);
+   show("custom"); return;
+}
+ let w=s.words[s.index]; document.getElementById("word").innerText=w[0]; document.getElementById("input").value="";}
+function action(){if(s.wait){s.index++;next();}else{check();}}
+function check(){let val=document.getElementById("input").value.toLowerCase(); let correctWord=s.words[s.index][1]; let fb=document.getElementById("feedback"); fb.style.display="block"; s.wait=true; document.getElementById("btn").innerText="DALEJ"; if(val===correctWord.toLowerCase()){fb.innerHTML="Dobrze ✔"; fb.style.background="var(--good)"; correct++;}else{fb.innerHTML="Źle ❌<br>"+correctWord; fb.style.background="var(--bad)";}}
+
+/* TRANSLATE ONLINE */
+async function translateWord(){if(!navigator.onLine){alert("Brak internetu ❌"); return;} let word=document.getElementById("w1").value; if(!word) return; try{let res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|pl`); let data=await res.json(); document.getElementById("w2").value=data.responseData.translatedText;}catch(e){alert("Błąd tłumaczenia");}}
+
+/* SHARE */
+function shareApp(){navigator.clipboard.writeText(window.location.href).then(()=>alert("Link skopiowany do schowka ✅")).catch(()=>prompt("Skopiuj link:", window.location.href));}
+
+/* WAŻNE */
+function drawImportant(){
+ const div=document.getElementById('importantList');
+ div.innerHTML='';
+ div.innerHTML=`
+<h4>Hiszpański - zaimki i czasownik 'ser'</h4>
+<table><tr><th>Zaimki</th><th>Ser</th><th>Wyjaśnienie</th></tr>
+<tr><td>yo</td><td>soy</td><td>pierwsza osoba liczby pojedynczej - ja jestem</td></tr>
+<tr><td>tú</td><td>eres</td><td>druga osoba liczby pojedynczej - ty jesteś</td></tr>
+<tr><td>él/ella/usted</td><td>es</td><td>trzecia osoba liczby pojedynczej / forma grzecznościowa</td></tr>
+<tr><td>nosotros/nosotras</td><td>somos</td><td>pierwsza osoba liczby mnogiej - my jesteśmy</td></tr>
+<tr><td>vosotros/vosotras</td><td>sois</td><td>druga osoba liczby mnogiej - wy jesteście</td></tr>
+<tr><td>ellos/ellas/ustedes</td><td>son</td><td>trzecia osoba liczby mnogiej - oni/one</td></tr>
+</table>
+<h4>Angielski - alfabet</h4>
+<table><tr><th>Litera</th><th>Wymowa</th><th>Przykład</th></tr>
+<tr><td>A</td><td>/eɪ/</td><td>apple</td></tr>
+<tr><td>B</td><td>/biː/</td><td>ball</td></tr>
+<tr><td>C</td><td>/siː/</td><td>cat</td></tr>
+</table>
+`;
 }
 
-function startTopic(t) {
-    currentSession.topic = t;
-    currentSession.words = Object.entries(baza[currentSession.lang].tematy[t]);
-    currentSession.index = 0;
-    currentSession.errors = [];
-    showView('view-game');
-    showNextWord();
-}
-
-function showNextWord() {
-    if (currentSession.index >= currentSession.words.length) {
-        finishTopic();
-        return;
-    }
-    document.getElementById("word-display").innerText = currentSession.words[currentSession.index][0];
-    document.getElementById("answer-input").value = "";
-    document.getElementById("answer-input").focus();
-}
-
-function checkAnswer() {
-    const userAns = document.getElementById("answer-input").value.toLowerCase().trim();
-    const [foreign, correct] = currentSession.words[currentSession.index];
-    
-    if (userAns === correct) {
-        state.points[currentSession.lang] += 10 * state.bonus[currentSession.lang];
-        addXP(20);
-    } else {
-        currentSession.errors.push({word: foreign, correct: correct, user: userAns || "(puste)"});
-    }
-    currentSession.index++;
-    saveGame(); // Zapisuj po każdej odpowiedzi!
-    showNextWord();
-}
-
-function addXP(amount) {
-    state.xp += amount;
-    let nextLevelXP = state.level * 100;
-    if (state.xp >= nextLevelXP) {
-        state.xp -= nextLevelXP;
-        state.level++;
-    }
-    updateUI();
-}
-
-function updateUI() {
-    let lang = currentSession.lang || "angielski";
-    document.getElementById("stat-points").innerText = `Punkty: ${state.points[lang]}`;
-    document.getElementById("stat-bonus").innerText = `Bonus: x${state.bonus[lang]}`;
-    document.getElementById("level-display").innerText = `Poziom ${state.level} (${state.xp}/${state.level*100} XP)`;
-    document.getElementById("xp-progress").style.width = (state.xp / (state.level*100) * 100) + "%";
-    
-    let cost = 50 * state.bonus[lang];
-    document.getElementById("btn-upgrade").innerText = `Kup Bonus x${state.bonus[lang]+1} (${cost} pkt)`;
-}
-
-function buyUpgrade() {
-    let lang = currentSession.lang;
-    let cost = 50 * state.bonus[lang];
-    if (state.points[lang] >= cost) {
-        state.points[lang] -= cost;
-        state.bonus[lang]++;
-        saveGame();
-        updateUI();
-        alert("Ulepszono!");
-    } else {
-        alert("Brak punktów!");
-    }
-}
-
-function finishTopic() {
-    showView('view-results');
-    document.getElementById("congrats-msg").innerText = currentSession.errors.length === 0 ? "Świetna nauka! 🌟" : "Dobry trening! 💪";
-    const errDiv = document.getElementById("error-list");
-    errDiv.innerHTML = "";
-    currentSession.words.forEach(([f, c]) => {
-        const err = currentSession.errors.find(e => e.word === f);
-        errDiv.innerHTML += `<div class='result-item'>${err ? '❌' : '✅'} <b>${f}</b> = ${c} ${err ? `<br><small>Twoja odp: <span class='error'>${err.user}</span></small>` : ''}</div>`;
-    });
-}
-
-document.getElementById("answer-input").addEventListener("keyup", (e) => { if (e.key === "Enter") checkAnswer(); });
-updateUI(); // Pierwsze załadowanie
-</script>
-</body>
+function save(){localStorage.setItem("save",JSON.stringify(state));}
+</script></body>
 </html>
-
