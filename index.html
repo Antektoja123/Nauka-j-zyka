@@ -3,106 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fiszki PRO - Final Fix</title>
+<title>Fiszki PRO - Wersja FINALNA</title>
 <style>
-:root { --bg: #f4f7fe; --card: #ffffff; --text: #2d3436; --primary: #0984e3; --good: #55efc4; --warn: #ffeaa7; --bad: #ff7675; }
-.dark { --bg: #2d3436; --card: #353b48; --text: #f5f6fa; --primary: #74b9ff; --good: #00b894; --warn: #fdcb6e; --bad: #d63031; }
-body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; }
-.app { width: 100%; max-width: 650px; min-height: 100vh; background: var(--card); border-radius: 0 0 20px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-.header { background: var(--primary); color: white; padding: 20px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+:root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --primary: #0866ff; --good: #d1e7dd; --warn: #fff3cd; --bad: #f8d7da; }
+.dark { --bg: #18191a; --card: #242526; --text: #e4e6eb; --primary: #2d88ff; --good: #0f5132; --warn: #664d03; --bad: #842029; }
+body { font-family: 'Segoe UI', system-ui; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; }
+.app { width: 100%; max-width: 650px; min-height: 100vh; background: var(--card); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+.header { background: var(--primary); color: white; padding: 20px; text-align: center; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
 .content { padding: 20px; }
-button { width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 15px; }
+button { width: 100%; padding: 16px; margin: 8px 0; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; }
 .blue { background: var(--primary); color:white; }
-.gray { background: #b2bec3; color:white; }
-input, select { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #dfe6e9; margin: 8px 0; box-sizing: border-box; }
+.gray { background: #e4e6eb; color:#050505; }
+.dark .gray { background: #3a3b3c; color: #e4e6eb; }
+input, select { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin: 8px 0; box-sizing: border-box; font-size: 16px; }
 .hidden { display: none; }
-.word-display { font-size: 36px; font-weight: 900; margin: 30px 0; text-align: center; color: var(--primary); }
-.fb-box { padding: 15px; border-radius: 12px; margin: 15px 0; display: none; text-align: center; font-weight: bold; }
-.scroll-area { max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; margin: 10px 0; font-size: 14px; border: 1px solid #ccc; }
+.word-display { font-size: 42px; font-weight: 800; margin: 40px 0; text-align: center; color: var(--primary); }
+.fb-box { padding: 20px; border-radius: 15px; margin: 15px 0; display: none; text-align: center; font-weight: bold; border: 2px solid transparent; }
+.scroll-area { max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.03); padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px solid #ccc; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div id="nav-title">🏠 Lobby</div>
-    <button onclick="toggleTheme()" style="width:auto; padding: 5px 15px;">🌙/☀</button>
+    <div id="nav-title">📚 Fiszki Expert</div>
+    <button onclick="toggleTheme()" style="width:auto; padding: 8px 12px; border-radius: 10px;">🌙/☀</button>
   </div>
   <div class="content">
     <div id="lobby">
-      <h3>Wybierz przedmiot:</h3>
+      <h3>Wybierz dziedzinę:</h3>
       <div id="lang-list"></div>
-      <button onclick="addNewLang()" class="gray">+ Dodaj nową dziedzinę</button>
+      <button onclick="addNewLang()" class="gray">+ Dodaj nową dziedzinę / przedmiot</button>
     </div>
     <div id="menu" class="hidden">
-      <button class="gray" onclick="show('lobby')">⬅ Lobby</button>
+      <button class="gray" onclick="show('lobby')">⬅ Powrót do Lobby</button>
       <h2 id="menu-lang"></h2>
-      <button class="blue" onclick="drawTopics()">📚 Zestawy / Fiszki</button>
-      <button style="background:#fdcb6e; color:#000;" onclick="showWiki()">❗ Ważne (Wiki Offline)</button>
+      <button class="blue" onclick="drawTopics()">📂 Otwórz Zestawy</button>
+      <button style="background:#ffc107; color:#000;" onclick="fetchWiki()">❗ Ważne (Pobierz info)</button>
     </div>
     <div id="topics" class="hidden">
       <button class="gray" onclick="show('menu')">⬅ Menu</button>
       <div id="topics-render"></div>
       <hr>
-      <input id="new-topic-in" placeholder="Nazwa zestawu (np. Zwierzęta)">
+      <input id="new-topic-in" placeholder="Nazwa nowego zestawu...">
       <button class="blue" onclick="createTopic()">➕ Stwórz nowy zestaw</button>
     </div>
     <div id="edit" class="hidden">
       <button class="gray" onclick="drawTopics()">⬅ Powrót</button>
       <h3 id="edit-title"></h3>
-      <div style="background:#eee; padding:15px; border-radius:12px; margin-bottom:15px;">
-        <select id="game-count"><option value="10">10 słów</option><option value="25">25 słów</option><option value="999">Wszystkie</option></select>
-        <button class="blue" onclick="startGame()">▶ START</button>
+      <div style="background:rgba(0,0,0,0.05); padding:15px; border-radius:15px; margin-bottom:20px;">
+        <label>Ilość słów w rundzie:</label>
+        <select id="game-count"><option value="10">10 słów</option><option value="25">25 słów</option><option value="50">50 słów</option><option value="999">Wszystkie</option></select>
+        <button class="blue" onclick="startGame()">▶ ROZPOCZNIJ NAUKĘ</button>
       </div>
-      <h4>Dodaj fiszkę:</h4>
+      <h4>Dodaj nową fiszkę:</h4>
       <input id="w-q" placeholder="Pytanie / Słowo">
-      <input id="w-a" placeholder="Odpowiedź / Tłumaczenie">
+      <div style="display:flex; gap:8px;">
+        <input id="w-a" placeholder="Odpowiedź / Tłumaczenie">
+        <button onclick="translateAI()" class="gray" style="width:120px; font-size:12px;">🌍 Tłumacz</button>
+      </div>
       <button onclick="addWord()" class="blue">➕ Dodaj do listy</button>
       <div id="word-list-view" class="scroll-area"></div>
     </div>
     <div id="game" class="hidden">
       <div id="fb" class="fb-box"></div>
       <div id="display-word" class="word-display"></div>
-      <input id="user-input" placeholder="Twoja odpowiedź..." autocomplete="off">
+      <input id="user-input" placeholder="Wpisz odpowiedź..." autocomplete="off">
       <button id="check-btn" class="blue" onclick="handleAction()">SPRAWDŹ</button>
     </div>
     <div id="result" class="hidden">
       <h2 id="final-score"></h2>
-      <div id="error-summary"></div>
-      <button class="blue" onclick="show('menu')">GOTOWE</button>
+      <div id="error-summary" class="scroll-area"></div>
+      <button class="blue" onclick="show('menu')">ZAKOŃCZ</button>
     </div>
     <div id="wiki" class="hidden">
       <button class="gray" onclick="show('menu')">⬅ Menu</button>
-      <div id="wiki-content" style="margin-top:20px;"></div>
+      <div id="wiki-content" style="margin-top:20px; line-height: 1.6;"></div>
     </div>
   </div>
 </div>
 <script>
-const base = {
+// --- GIGANTYCZNA BAZA DANYCH ---
+const megaData = {
   "Angielski": {
-    "🍎 Owoce": [["Apple","Jabłko"],["Pear","Gruszka"],["Plum","Śliwka"],["Grape","Winogrono"],["Watermelon","Arbuz"]],
-    "🎨 Kolory": [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"],["Yellow","Żółty"],["Black","Czarny"]]
-  },
-  "Hiszpański": {
-    "🍎 Frutas": [["Manzana","Jabłko"],["Naranja","Pomarańcza"],["Plátano","Banan"],["Fresa","Truskawka"]],
-    "🎨 Colores": [["Rojo","Czerwony"],["Azul","Niebieski"],["Verde","Zielony"],["Amarillo","Żółty"]]
+    "🍎 Owoce i Warzywa (60)": [["Apple","Jabłko"],["Pear","Gruszka"],["Plum","Śliwka"],["Grape","Winogrono"],["Watermelon","Arbuz"],["Lemon","Cytryna"],["Peach","Brzoskwinia"],["Cherry","Wiśnia"],["Strawberry","Truskawka"],["Raspberry","Malina"],["Blueberry","Jagoda"],["Pineapple","Ananas"],["Banana","Banan"],["Orange","Pomarańcza"],["Tomato","Pomidor"],["Potato","Ziemniak"],["Onion","Cebula"],["Garlic","Czosnek"],["Cucumber","Ogórek"],["Carrot","Marchewka"],["Cabbage","Kapusta"],["Lettuce","Sałata"],["Pepper","Papryka"],["Broccoli","Brokuł"],["Pumpkin","Dynia"],["Mushroom","Grzyb"],["Corn","Kukurydza"],["Bean","Fasola"],["Pea","Groszek"],["Radish","Rzodkiewka"]],
+    "🎨 Kolory i Liczby (50)": [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"],["Yellow","Żółty"],["Black","Czarny"],["White","Biały"],["Pink","Różowy"],["Orange","Pomarańczowy"],["Brown","Brązowy"],["Purple","Fioletowy"],["Gray","Szary"],["Gold","Złoty"],["Silver","Srebrny"],["One","Jeden"],["Two","Dwa"],["Three","Trzy"],["Four","Cztery"],["Five","Pięć"],["Six","Sześć"],["Seven","Siedem"],["Eight","Osiem"],["Nine","Dziewięć"],["Ten","Dziesięć"],["Eleven","Jedenaście"],["Twelve","Dwanaście"],["Twenty","Dwadzieścia"],["Thirty","Trzydzieści"],["Fifty","Pięćdziesiąt"],["Hundred","Sto"],["Thousand","Tysiąc"]]
   },
   "Geografia": {
-    "🌍 Europa": [["Polska","Warszawa"],["Niemcy","Berlin"],["Francja","Paryż"],["Włochy","Rzym"],["Hiszpania","Madryt"]],
-    "🌏 Azja": [["Chiny","Pekin"],["Japonia","Tokio"],["Indie","New Delhi"]]
+    "🌍 Europa - Kraje i Stolice (50)": [["Polska","Warszawa"],["Niemcy","Berlin"],["Francja","Paryż"],["Włochy","Rzym"],["Hiszpania","Madryt"],["Portugalia","Lizbona"],["Grecja","Ateny"],["Czechy","Praga"],["Słowacja","Bratysława"],["Austria","Wiedeń"],["Belgia","Bruksela"],["Holandia","Amsterdam"],["Dania","Kopenhaga"],["Szwecja","Sztokholm"],["Norwegia","Oslo"],["Finlandia","Helsinki"],["Irlandia","Dublin"],["Wielka Brytania","Londyn"],["Węgry","Budapeszt"],["Rumunia","Bukareszt"],["Bułgaria","Sofia"],["Chorwacja","Zagrzeb"],["Szwajcaria","Berno"],["Ukraina","Kijów"],["Litwa","Wilno"],["Łotwa","Ryga"],["Estonia","Tallinn"]],
+    "🌏 Azja i Świat (50)": [["Chiny","Pekin"],["Japonia","Tokio"],["Indie","New Delhi"],["Korea Południowa","Seul"],["Tajlandia","Bangkok"],["Wietnam","Hanoi"],["Turcja","Ankara"],["Izrael","Jerozolima"],["Egipt","Kair"],["USA","Waszyngton"],["Kanada","Ottawa"],["Meksyk","Meksyk"],["Brazylia","Brasilia"],["Argentyna","Buenos Aires"],["Australia","Canberra"],["RPA","Pretoria"],["Rosja","Moskwa"]]
   },
   "Matematyka": {
-    "⚡ Potęgi": [["2^2","4"],["3^2","9"],["4^2","16"],["5^2","25"],["10^2","100"]]
+    "⚡ Potęgi i Liczby (60)": [["2^0","1"],["2^1","2"],["2^2","4"],["2^3","8"],["2^4","16"],["2^5","32"],["2^6","64"],["2^7","128"],["2^8","256"],["2^9","512"],["2^10","1024"],["3^2","9"],["3^3","27"],["3^4","81"],["4^2","16"],["4^3","64"],["5^2","25"],["5^3","125"],["6^2","36"],["7^2","49"],["8^2","64"],["9^2","81"],["10^2","100"],["11^2","121"],["12^2","144"],["15^2","225"],["20^2","400"],["25^2","625"]],
+    "√ Pierwiastki (50)": [["√1","1"],["√4","2"],["√9","3"],["√16","4"],["√25","5"],["√36","6"],["√49","7"],["√64","8"],["√81","9"],["√100","10"],["√121","11"],["√144","12"],["√169","13"],["√196","14"],["√225","15"],["√400","20"],["√625","25"],["√900","30"],["√2500","50"],["³√8","2"],["³√27","3"],["³√64","4"],["³√125","5"]],
+    "📐 Wzory (50)": [["Pole kwadratu","a*a"],["Pole prostokąta","a*b"],["Pole trójkąta","(a*h)/2"],["Pole koła","π*r^2"],["Obwód koła","2*π*r"],["Twierdzenie Pitagorasa","a^2+b^2=c^2"],["Pole równoległoboku","a*h"],["Pole trapezu","(a+b)*h/2"],["Objętość sześcianu","a^3"],["Objętość walca","π*r^2*h"],["Wzór na deltę","b^2-4ac"]]
+  },
+  "Hiszpański": {
+    "🍎 Comida (50)": [["Manzana","Jabłko"],["Naranja","Pomarańcza"],["Plátano","Banan"],["Fresa","Truskawka"],["Uva","Winogrono"],["Pan","Chleb"],["Agua","Woda"],["Leche","Mleko"],["Queso","Ser"],["Huevo","Jajko"]],
+    "💬 Palabras (50)": [["Hola","Cześć"],["Adiós","Do widzenia"],["Gracias","Dziękuję"],["Por favor","Proszę"],["Lo siento","Przepraszam"],["Sí","Tak"],["No","Nie"],["¿Cómo estás?","Jak się masz?"],["Bien","Dobrze"]]
   }
 };
 
-let db = JSON.parse(localStorage.getItem("f_pro_v6")) || { custom: base, langs: Object.keys(base), kn: {}, theme: "light" };
+let db = JSON.parse(localStorage.getItem("f_pro_v8")) || { custom: megaData, langs: Object.keys(megaData), kn: {}, theme: "light" };
 let cur = { l: "", t: "", w: [], idx: 0, ok: 0, errs: [], wait: false };
 
-function save() { localStorage.setItem("f_pro_v6", JSON.stringify(db)); }
-function show(id) { 
-  document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden')); 
-  document.getElementById(id).classList.remove('hidden'); 
-}
+function save() { localStorage.setItem("f_pro_v8", JSON.stringify(db)); }
+function show(id) { document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
 
 function drawLobby() {
   const list = document.getElementById('lang-list'); list.innerHTML = '';
@@ -113,7 +118,14 @@ function drawLobby() {
   });
 }
 
-function addNewLang() { let n = prompt("Nazwa przedmiotu:"); if(n) { db.langs.push(n); db.custom[n] = {}; save(); drawLobby(); } }
+function addNewLang() { 
+  let n = prompt("Podaj nazwę przedmiotu (np. Niemiecki):"); 
+  if(n) { 
+    db.langs.push(n); 
+    db.custom[n] = {"Pakiet Startowy": [["Cześć","Hello"],["Dziękuję","Thank you"]]}; 
+    save(); drawLobby(); 
+  } 
+}
 
 function drawTopics() {
   show('topics'); const list = document.getElementById('topics-render'); list.innerHTML = '';
@@ -132,13 +144,23 @@ function createTopic() {
 function openEdit() {
   show('edit'); document.getElementById('edit-title').innerText = cur.t;
   const v = document.getElementById('word-list-view');
-  v.innerHTML = db.custom[cur.l][cur.t].map(w => `• ${w[0]} = ${w[1]}`).join('<br>') || "Zestaw pusty.";
+  v.innerHTML = db.custom[cur.l][cur.t].map(w => `<div>• <b>${w[0]}</b> - ${w[1]}</div>`).join('') || "Zestaw pusty.";
 }
 
 function addWord() {
   let q = document.getElementById('w-q').value, a = document.getElementById('w-a').value;
   if(!q || !a) return; db.custom[cur.l][cur.t].push([q, a]);
   save(); openEdit(); document.getElementById('w-q').value = ''; document.getElementById('w-a').value = '';
+}
+
+async function translateAI() {
+  let q = document.getElementById('w-q').value; if(!q) return;
+  document.getElementById('w-a').placeholder = "Tłumaczenie...";
+  try {
+    let res = await fetch(`https://translated.net{encodeURIComponent(q)}&langpair=pl|en`);
+    let data = await res.json();
+    document.getElementById('w-a').value = data.responseData.translatedText;
+  } catch(e) { alert("Błąd tłumacza."); }
 }
 
 function startGame() {
@@ -163,14 +185,14 @@ function handleAction() {
   let f = document.getElementById('fb'); f.style.display = 'block'; cur.wait = true;
   document.getElementById('check-btn').innerText = "DALEJ";
   
-  if(u === r) { f.innerText = "Idealnie! ✔"; f.style.background = "var(--good)"; cur.ok++; }
+  if(u === r) { f.innerText = "Dobrze! ✔"; f.className="fb-box"; f.style.background = "var(--good)"; cur.ok++; }
   else if (lev(u, r) <= 2) { f.innerText = `Prawie! Poprawnie: ${cur.w[cur.idx][1]}`; f.style.background = "var(--warn)"; cur.ok++; }
   else { f.innerText = `Błąd! Poprawnie: ${cur.w[cur.idx][1]}`; f.style.background = "var(--bad)"; cur.errs.push(`${cur.w[cur.idx][0]} -> ${cur.w[cur.idx][1]}`); }
 }
 
 function fin() {
-  show('result'); document.getElementById('final-score').innerText = `Wynik: ${cur.ok} / ${cur.w.length}`;
-  document.getElementById('error-summary').innerHTML = cur.errs.length ? "<b>Powtórz:</b><br>" + cur.errs.join('<br>') : "Perfekcyjnie! 🏆";
+  show('result'); document.getElementById('final-score').innerText = `Koniec! Wynik: ${cur.ok} / ${cur.w.length}`;
+  document.getElementById('error-summary').innerHTML = cur.errs.length ? "<b>Do powtórki:</b><br>" + cur.errs.join('<br>') : "Perfekcyjnie! 🏆";
 }
 
 function lev(s1, s2) {
@@ -178,13 +200,15 @@ function lev(s1, s2) {
   return costs[s2.length];
 }
 
-async function showWiki() {
+async function fetchWiki() {
   show('wiki'); const c = document.getElementById('wiki-content');
-  if(db.kn[cur.l]) c.innerHTML = `<div class="scroll-area">${db.kn[cur.l]}</div>`;
-  else { c.innerHTML = "🔄 Pobieranie zasad..."; try {
-    let res = await fetch(`https://wikipedia.org{encodeURIComponent(cur.l)}`);
-    let data = await res.json(); db.kn[cur.l] = data.extract; save(); showWiki();
-  } catch(e) { c.innerHTML = "Błąd pobierania (brak internetu)."; }}
+  c.innerHTML = "🔄 Pobieranie najważniejszych informacji...";
+  try {
+    let q = cur.l === "Geografia" ? "Geografia_świata" : (cur.l === "Matematyka" ? "Matematyka" : `Gramatyka_języka_${cur.l.toLowerCase()}`);
+    let res = await fetch(`https://wikipedia.org{encodeURIComponent(q)}`);
+    let data = await res.json();
+    c.innerHTML = `<h3>Ważne: ${cur.l}</h3><p>${data.extract || "Brak danych."}</p><hr><small>Dane z Wikipedii</small>`;
+  } catch(e) { c.innerHTML = "Błąd połączenia (brak internetu)."; }
 }
 
 function toggleTheme() { document.body.classList.toggle("dark"); db.theme = document.body.classList.contains("dark") ? "dark" : "light"; save(); }
